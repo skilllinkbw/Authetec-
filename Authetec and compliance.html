@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Authetec – Compliance & Data Protection Hub</title>
+    <style>
+        /* ── RESET & VARIABLES ── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #60a5fa;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --bg-card-hover: #273548;
+            --bg-input: #0f172a;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --border-light: #475569;
+            --radius: 10px;
+            --radius-lg: 16px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.6);
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+        a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── LAYOUT ── */
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 270px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 1rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-brand .icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .sidebar-nav a:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+        .sidebar-nav a.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--primary-light);
+            border-left: 3px solid var(--primary);
+        }
+        .sidebar-nav a .badge {
+            margin-left: auto;
+            background: var(--danger);
+            color: #fff;
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-weight: 700;
+        }
+        .sidebar-section-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            padding: 1rem 14px 0.4rem;
+            font-weight: 700;
+        }
+
+        /* ── MAIN ── */
+        .main-content {
+            flex: 1;
+            padding: 2rem 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .topbar h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+        .topbar h1 small {
+            font-weight: 400;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 2px;
+        }
+        .topbar-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .topbar-actions .btn {
+            padding: 8px 18px;
+            border-radius: var(--radius);
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover {
+            border-color: var(--primary-light);
+            color: var(--text-primary);
+        }
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+        .btn-success:hover {
+            opacity: 0.85;
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+        .btn-danger:hover {
+            opacity: 0.85;
+        }
+        .btn-warning {
+            background: var(--warning);
+            color: #000;
+        }
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 0.75rem;
+        }
+
+        /* ── PAGES ── */
+        .page {
+            display: none;
+            animation: fadeUp 0.35s ease;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+        .card:hover {
+            border-color: var(--border-light);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        /* ── GRIDS ── */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+        }
+
+        /* ── STATS ── */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem 1.5rem;
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 24px rgba(59, 130, 246, 0.08);
+        }
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+        }
+        .stat-card .value.green {
+            color: var(--success);
+        }
+        .stat-card .value.red {
+            color: var(--danger);
+        }
+        .stat-card .value.yellow {
+            color: var(--warning);
+        }
+        .stat-card .value.blue {
+            color: var(--primary-light);
+        }
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .stat-card .trend {
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .stat-card .trend.up {
+            color: var(--success);
+        }
+        .stat-card .trend.down {
+            color: var(--danger);
+        }
+
+        /* ── BADGES ── */
+        .badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .badge-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+        .badge-info {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--primary-light);
+        }
+        .badge-neutral {
+            background: rgba(148, 163, 184, 0.15);
+            color: var(--text-muted);
+        }
+
+        /* ── TABLES ── */
+        .table-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        tr:hover td {
+            background: var(--bg-card-hover);
+        }
+
+        /* ── FORMS ── */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: var(--font);
+            transition: var(--transition);
+        }
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .form-check input[type="checkbox"],
+        .form-check input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        /* ── PROGRESS ── */
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-input);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+        .progress-fill.green {
+            background: var(--success);
+        }
+        .progress-fill.yellow {
+            background: var(--warning);
+        }
+        .progress-fill.red {
+            background: var(--danger);
+        }
+        .progress-fill.blue {
+            background: var(--primary);
+        }
+
+        /* ── RISK METER ── */
+        .risk-meter {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.2rem;
+            background: var(--bg-input);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        .risk-meter .score {
+            font-size: 2.8rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .risk-meter .score.low {
+            color: var(--success);
+        }
+        .risk-meter .score.medium {
+            color: var(--warning);
+        }
+        .risk-meter .score.high {
+            color: var(--danger);
+        }
+        .risk-meter .details {
+            flex: 1;
+        }
+        .risk-meter .details .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-header h2 {
+            font-size: 1.3rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+        .modal-body {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .modal-body::-webkit-scrollbar {
+            width: 4px;
+        }
+        .modal-body::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        .modal-footer {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        /* ── TOAST / NOTIFICATION ── */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            padding: 14px 24px;
+            border-radius: var(--radius);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow-lg);
+            max-width: 420px;
+            animation: slideIn 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+        .toast.warning {
+            border-left: 4px solid var(--warning);
+        }
+        .toast.info {
+            border-left: 4px solid var(--primary);
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1024px) {
+            .app-wrapper {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 1rem;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            .sidebar-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 2px;
+            }
+            .sidebar-nav a {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            .sidebar-section-label {
+                display: none;
+            }
+            .main-content {
+                padding: 1.5rem;
+            }
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 640px) {
+            .stat-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .topbar h1 {
+                font-size: 1.2rem;
+            }
+            .main-content {
+                padding: 1rem;
+            }
+            .risk-meter {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-light);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- ========== SIDEBAR ========== -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="icon">🛡️</span>
+                <span>Authetec</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Compliance</div>
+                <a href="#" class="active" data-page="dashboard">📊 Dashboard</a>
+                <a href="#" data-page="dpa">📋 Data Protection Act</a>
+                <a href="#" data-page="risk">⚠️ Risk Assessment</a>
+                <a href="#" data-page="audit">📜 Audit Trail</a>
+
+                <div class="sidebar-section-label">Policies</div>
+                <a href="#" data-page="terms">📄 Terms &amp; Conditions</a>
+                <a href="#" data-page="privacy">🔐 Privacy Policy</a>
+                <a href="#" data-page="consent">✅ Consent Management</a>
+
+                <div class="sidebar-section-label">Operations</div>
+                <a href="#" data-page="reports">📊 Reports</a>
+                <a href="#" data-page="settings">⚙️ Settings</a>
+            </nav>
+        </aside>
+
+        <!-- ========== MAIN CONTENT ========== -->
+        <div class="main-content">
+
+            <!-- TOPBAR -->
+            <div class="topbar">
+                <div>
+                    <h1 id="pageTitle">Compliance Dashboard <small>Data Protection &amp; Regulatory Hub</small></h1>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-outline btn-sm" onclick="exportReport()">📥 Export Report</button>
+                    <button class="btn btn-primary btn-sm" onclick="runComplianceCheck()">🔄 Run Compliance Check</button>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PAGE: DASHBOARD -->
+            <!-- ============================================================ -->
+            <div class="page active" id="page-dashboard">
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="value green">94%</div>
+                        <div class="label">Compliance Score</div>
+                        <div class="trend up">▲ 2.4% from last month</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value blue">18</div>
+                        <div class="label">Active Policies</div>
+                        <div class="trend">All ratified</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value yellow">3</div>
+                        <div class="label">Open Risks</div>
+                        <div class="trend down">▼ 1 high severity</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value green">1,247</div>
+                        <div class="label">Consents Recorded</div>
+                        <div class="trend up">▲ 12%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value blue">100%</div>
+                        <div class="label">Audit Coverage</div>
+                        <div class="trend up">▲ All systems</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value green">0</div>
+                        <div class="label">Data Breaches</div>
+                        <div class="trend">✅ Clean record</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">📋 Compliance Checklist</span>
+                            <span class="badge badge-success">8/10 complete</span>
+                        </div>
+                        <div id="checklistItems">
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                                <span>✅ Data Protection Act registered</span>
+                                <span class="badge badge-success">Pass</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                                <span>✅ Privacy Policy published</span>
+                                <span class="badge badge-success">Pass</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                                <span>✅ Terms &amp; Conditions accepted</span>
+                                <span class="badge badge-success">Pass</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                                <span>✅ Consent Management active</span>
+                                <span class="badge badge-success">Pass</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                                <span>✅ Risk Assessment complete</span>
+                                <span class="badge badge-success">Pass</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                                <span>⚠️ Data Retention Policy</span>
+                                <span class="badge badge-warning">In review</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                                <span>✅ Breach Notification Plan</span>
+                                <span class="badge badge-success">Pass</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                                <span>⚠️ Third‑Party Processor Agreements</span>
+                                <span class="badge badge-warning">Partial</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                                <span>✅ Data Subject Access Rights</span>
+                                <span class="badge badge-success">Pass</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;">
+                                <span>✅ Security Incident Response</span>
+                                <span class="badge badge-success">Pass</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">🔔 Recent Compliance Events</span>
+                            <a href="#" onclick="navigateTo('audit');return false;" style="font-size:0.8rem;">View all</a>
+                        </div>
+                        <div id="recentEvents">
+                            <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                                <div><span class="badge badge-info">Audit</span> Policy v2.3 updated</div>
+                                <span style="font-size:0.75rem;color:var(--text-muted);">2h ago</span>
+                            </div>
+                            <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                                <div><span class="badge badge-success">Consent</span> 12 new consents</div>
+                                <span style="font-size:0.75rem;color:var(--text-muted);">4h ago</span>
+                            </div>
+                            <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                                <div><span class="badge badge-warning">Risk</span> Risk assessment updated</div>
+                                <span style="font-size:0.75rem;color:var(--text-muted);">1d ago</span>
+                            </div>
+                            <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                                <div><span class="badge badge-danger">Alert</span> Data export requested</div>
+                                <span style="font-size:0.75rem;color:var(--text-muted);">2d ago</span>
+                            </div>
+                            <div style="padding:10px 0;display:flex;justify-content:space-between;align-items:center;">
+                                <div><span class="badge badge-info">Audit</span> System health check passed</div>
+                                <span style="font-size:0.75rem;color:var(--text-muted);">3d ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📊 Data Protection Act Compliance Status</span>
+                        <span class="badge badge-success">94% Compliant</span>
+                    </div>
+                    <div class="grid-3" id="dpaQuickStats">
+                        <div><strong>Data Mapping</strong><div class="progress-bar"><div class="progress-fill green" style="width:100%;"></div></div><span style="font-size:0.8rem;color:var(--text-muted);">Complete</span></div>
+                        <div><strong>Risk Assessment</strong><div class="progress-bar"><div class="progress-fill green" style="width:90%;"></div></div><span style="font-size:0.8rem;color:var(--text-muted);">90%</span></div>
+                        <div><strong>Policy Coverage</strong><div class="progress-bar"><div class="progress-fill green" style="width:95%;"></div></div><span style="font-size:0.8rem;color:var(--text-muted);">95%</span></div>
+                        <div><strong>Training Completion</strong><div class="progress-bar"><div class="progress-fill yellow" style="width:72%;"></div></div><span style="font-size:0.8rem;color:var(--text-muted);">72%</span></div>
+                        <div><strong>Incident Readiness</strong><div class="progress-bar"><div class="progress-fill green" style="width:100%;"></div></div><span style="font-size:0.8rem;color:var(--text-muted);">Ready</span></div>
+                        <div><strong>Audit Trail</strong><div class="progress-bar"><div class="progress-fill green" style="width:100%;"></div></div><span style="font-size:0.8rem;color:var(--text-muted);">Active</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PAGE: DATA PROTECTION ACT -->
+            <!-- ============================================================ -->
+            <div class="page" id="page-dpa">
+                <h2 style="margin-bottom:1rem;">📋 Data Protection Act Compliance</h2>
+                <p style="color:var(--text-muted);margin-bottom:1.5rem;">Complete framework aligned with Botswana Data Protection Act and GDPR principles.</p>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">🔑 Key Principles</span></div>
+                        <div id="dpaPrinciples">
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                                <span>Lawfulness, Fairness, Transparency</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                                <span>Purpose Limitation</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                                <span>Data Minimisation</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                                <span>Accuracy</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                                <span>Storage Limitation</span>
+                                <span class="badge badge-warning">⏳ Review</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                                <span>Integrity &amp; Confidentiality</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;">
+                                <span>Accountability</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">📋 Data Subject Rights</span></div>
+                        <div id="dpaRights">
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                                <span>Right to Access</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                                <span>Right to Rectification</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                                <span>Right to Erasure</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                                <span>Right to Restrict Processing</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                                <span>Right to Data Portability</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;">
+                                <span>Right to Object</span>
+                                <span class="badge badge-success">✅</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><span class="card-title">📄 Data Processing Register</span><button class="btn btn-primary btn-sm" onclick="addProcessingActivity()">+ Add Activity</button></div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Activity</th><th>Purpose</th><th>Data Categories</th><th>Retention</th><th>Status</th></tr></thead>
+                            <tbody id="processingRegister">
+                                <tr>
+                                    <td>Customer Onboarding</td>
+                                    <td>Identity Verification</td>
+                                    <td>Name, ID, Photo, Address</td>
+                                    <td>7 years</td>
+                                    <td><span class="badge badge-success">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Transaction Processing</td>
+                                    <td>Payment Execution</td>
+                                    <td>Financial, Payment details</td>
+                                    <td>10 years</td>
+                                    <td><span class="badge badge-success">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Fraud Detection</td>
+                                    <td>Risk Management</td>
+                                    <td>Behavioural, Device data</td>
+                                    <td>3 years</td>
+                                    <td><span class="badge badge-success">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Marketing Analytics</td>
+                                    <td>Business Intelligence</td>
+                                    <td>Usage patterns, Preferences</td>
+                                    <td>2 years</td>
+                                    <td><span class="badge badge-warning">Opt‑out available</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PAGE: RISK ASSESSMENT -->
+            <!-- ============================================================ -->
+            <div class="page" id="page-risk">
+                <h2 style="margin-bottom:1rem;">⚠️ Risk Assessment Dashboard</h2>
+                <p style="color:var(--text-muted);margin-bottom:1.5rem;">Real‑time risk scoring across compliance, security, and operational domains.</p>
+
+                <div class="risk-meter" id="overallRiskMeter">
+                    <div class="score low" id="overallRiskScore">18</div>
+                    <div class="details">
+                        <div class="label">Overall Risk Score</div>
+                        <div style="font-weight:700;font-size:1.1rem;">Low Risk</div>
+                        <div style="font-size:0.85rem;color:var(--text-muted);">Based on 12 risk indicators</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="badge badge-success">✅ Within tolerance</span>
+                        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Updated: just now</div>
+                    </div>
+                </div>
+
+                <div class="grid-3" style="margin-top:1.5rem;">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">🛡️ Security Risk</span><span class="badge badge-success">Low</span></div>
+                        <div>Score: <strong>12</strong> / 100</div>
+                        <div class="progress-bar"><div class="progress-fill green" style="width:12%;"></div></div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;">2 vulnerabilities patched</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">📋 Compliance Risk</span><span class="badge badge-success">Low</span></div>
+                        <div>Score: <strong>22</strong> / 100</div>
+                        <div class="progress-bar"><div class="progress-fill green" style="width:22%;"></div></div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;">1 policy under review</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">👤 Privacy Risk</span><span class="badge badge-warning">Medium</span></div>
+                        <div>Score: <strong>45</strong> / 100</div>
+                        <div class="progress-bar"><div class="progress-fill yellow" style="width:45%;"></div></div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;">Consent refresh due</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">🏢 Operational Risk</span><span class="badge badge-success">Low</span></div>
+                        <div>Score: <strong>8</strong> / 100</div>
+                        <div class="progress-bar"><div class="progress-fill green" style="width:8%;"></div></div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;">All systems healthy</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">📊 Third‑Party Risk</span><span class="badge badge-warning">Medium</span></div>
+                        <div>Score: <strong>38</strong> / 100</div>
+                        <div class="progress-bar"><div class="progress-fill yellow" style="width:38%;"></div></div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;">1 vendor review pending</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">🔄 Reputational Risk</span><span class="badge badge-success">Low</span></div>
+                        <div>Score: <strong>5</strong> / 100</div>
+                        <div class="progress-bar"><div class="progress-fill green" style="width:5%;"></div></div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;">No incidents reported</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><span class="card-title">📋 Risk Register</span><button class="btn btn-primary btn-sm" onclick="addRisk()">+ Add Risk</button></div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Risk ID</th><th>Category</th><th>Description</th><th>Likelihood</th><th>Impact</th><th>Score</th><th>Status</th></tr></thead>
+                            <tbody id="riskRegister">
+                                <tr>
+                                    <td>#R-001</td><td>Privacy</td><td>Consent records incomplete for 5% of users</td>
+                                    <td><span class="badge badge-warning">Medium</span></td>
+                                    <td><span class="badge badge-warning">Medium</span></td>
+                                    <td><span class="badge badge-warning">16</span></td>
+                                    <td><span class="badge badge-info">Monitoring</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#R-002</td><td>Security</td><td>Legacy API endpoint lacks rate limiting</td>
+                                    <td><span class="badge badge-warning">Low</span></td>
+                                    <td><span class="badge badge-danger">High</span></td>
+                                    <td><span class="badge badge-warning">12</span></td>
+                                    <td><span class="badge badge-success">Mitigated</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#R-003</td><td>Compliance</td><td>Data retention policy not fully documented</td>
+                                    <td><span class="badge badge-warning">Medium</span></td>
+                                    <td><span class="badge badge-warning">Low</span></td>
+                                    <td><span class="badge badge-warning">8</span></td>
+                                    <td><span class="badge badge-warning">In review</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PAGE: AUDIT TRAIL -->
+            <!-- ============================================================ -->
+            <div class="page" id="page-audit">
+                <h2 style="margin-bottom:1rem;">📜 Audit Trail</h2>
+                <p style="color:var(--text-muted);margin-bottom:1.5rem;">Immutable, timestamped logs of all compliance‑relevant activities.</p>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">All Events</span>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-outline btn-sm" onclick="filterAudit('all')">All</button>
+                            <button class="btn btn-outline btn-sm" onclick="filterAudit('consent')">Consent</button>
+                            <button class="btn btn-outline btn-sm" onclick="filterAudit('policy')">Policy</button>
+                            <button class="btn btn-outline btn-sm" onclick="filterAudit('risk')">Risk</button>
+                            <button class="btn btn-outline btn-sm" onclick="filterAudit('data')">Data</button>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Category</th><th>Details</th><th>IP</th></tr></thead>
+                            <tbody id="auditTable">
+                                <tr>
+                                    <td>2026-07-21 14:23</td><td>admin@authetec</td><td>Policy Updated</td>
+                                    <td><span class="badge badge-info">Policy</span></td>
+                                    <td>DPA v2.3 revised</td>
+                                    <td>192.168.1.10</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-07-21 12:05</td><td>compliance@authetec</td><td>Consent Granted</td>
+                                    <td><span class="badge badge-success">Consent</span></td>
+                                    <td>User #3456 consented</td>
+                                    <td>10.0.0.5</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-07-21 09:47</td><td>system</td><td>Risk Assessment Run</td>
+                                    <td><span class="badge badge-warning">Risk</span></td>
+                                    <td>Overall score: 18</td>
+                                    <td>N/A</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-07-20 16:30</td><td>data-officer@authetec</td><td>Data Export</td>
+                                    <td><span class="badge badge-info">Data</span></td>
+                                    <td>User #7890 requested export</td>
+                                    <td>192.168.1.25</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-07-20 11:12</td><td>admin@authetec</td><td>Terms Accepted</td>
+                                    <td><span class="badge badge-neutral">Terms</span></td>
+                                    <td>New user #9012 accepted</td>
+                                    <td>10.0.0.8</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PAGE: TERMS & CONDITIONS -->
+            <!-- ============================================================ -->
+            <div class="page" id="page-terms">
+                <h2 style="margin-bottom:1rem;">📄 Terms &amp; Conditions</h2>
+                <p style="color:var(--text-muted);margin-bottom:1.5rem;">Current version v3.2 – Last updated 2026-07-01</p>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Full Terms &amp; Conditions</span>
+                        <span class="badge badge-success">✅ Accepted by all users</span>
+                    </div>
+                    <div style="max-height:400px;overflow-y:auto;padding-right:8px;color:var(--text-secondary);line-height:1.8;font-size:0.95rem;">
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">1. Introduction</h3>
+                        <p>These Terms &amp; Conditions govern your use of the Authetec platform and all associated services. By using Authetec, you agree to be bound by these terms.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">2. Data Protection &amp; Privacy</h3>
+                        <p>Authetec processes personal data in accordance with the Botswana Data Protection Act and GDPR principles. We act as both a Data Controller and Data Processor where applicable. All data processing activities are documented in our Data Processing Register.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">3. User Obligations</h3>
+                        <p>Users must provide accurate information, maintain security of their accounts, and use the platform in compliance with all applicable laws. Any fraudulent or illegal activity will result in immediate termination.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">4. Intellectual Property</h3>
+                        <p>All content, software, and technology used in Authetec is the exclusive property of Authetec (Pty) Ltd. Users are granted a limited, revocable license to use the platform for their legitimate business purposes.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">5. Liability &amp; Indemnification</h3>
+                        <p>Authetec provides services "as is" with no warranties. Our liability is limited to the fees paid in the preceding 12 months. Users indemnify Authetec against claims arising from their use of the platform.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">6. Termination</h3>
+                        <p>Either party may terminate this agreement with 30 days' written notice. Authetec may terminate immediately for breach of these terms, data protection violations, or fraudulent activity.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">7. Governing Law</h3>
+                        <p>These terms are governed by the laws of Botswana. Any disputes shall be resolved in the courts of Gaborone.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">8. Changes to Terms</h3>
+                        <p>Authetec reserves the right to update these terms. Users will be notified of material changes, and continued use constitutes acceptance of the updated terms.</p>
+
+                        <div style="margin-top:1.5rem;padding:1rem;background:var(--bg-input);border-radius:var(--radius);border:1px solid var(--border);">
+                            <p style="color:var(--text-primary);font-weight:600;">✅ These Terms are fully compliant with:</p>
+                            <ul style="color:var(--text-muted);padding-left:1.5rem;margin-top:0.5rem;">
+                                <li>Botswana Data Protection Act (2023)</li>
+                                <li>GDPR (Regulation (EU) 2016/679)</li>
+                                <li>Financial Intelligence Act (FIA)</li>
+                                <li>Bank of Botswana Payment System Oversight</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><span class="card-title">📊 Acceptance Statistics</span></div>
+                    <div class="grid-3">
+                        <div><strong>Total Acceptances</strong><br><span style="font-size:1.5rem;font-weight:800;">1,247</span></div>
+                        <div><strong>Last Accepted</strong><br><span style="color:var(--text-muted);">2026-07-21 14:23</span></div>
+                        <div><strong>Version</strong><br><span class="badge badge-success">v3.2</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PAGE: PRIVACY POLICY -->
+            <!-- ============================================================ -->
+            <div class="page" id="page-privacy">
+                <h2 style="margin-bottom:1rem;">🔐 Privacy Policy</h2>
+                <p style="color:var(--text-muted);margin-bottom:1.5rem;">How Authetec collects, uses, and protects your personal data.</p>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Privacy Policy v2.4</span>
+                        <span class="badge badge-success">✅ GDPR Compliant</span>
+                    </div>
+                    <div style="max-height:400px;overflow-y:auto;padding-right:8px;color:var(--text-secondary);line-height:1.8;font-size:0.95rem;">
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">1. Data Controller</h3>
+                        <p>Authetec (Pty) Ltd is the Data Controller for all personal data processed through the platform. Our Data Protection Officer can be reached at dpo@authetec.co.bw.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">2. Data We Collect</h3>
+                        <p>We collect: identity documents, biometric data (face images), contact information, financial details, device fingerprints, IP addresses, usage analytics, and verification results.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">3. How We Use Your Data</h3>
+                        <p>Data is used for: identity verification, fraud detection, transaction processing, compliance reporting, customer support, platform improvement, and legal obligations.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">4. Data Sharing</h3>
+                        <p>We share data with: financial institutions (for payments), verification partners (for identity checks), regulators (for compliance), and law enforcement (where legally required).</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">5. Data Retention</h3>
+                        <p>We retain data for: 7 years for transaction records, 3 years for biometric data, 2 years for analytics, and as required by law. Users may request deletion at any time.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">6. Your Rights</h3>
+                        <p>You have the right to: access, rectification, erasure, restriction, objection, data portability, and to lodge a complaint with the Data Protection Authority.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">7. Security Measures</h3>
+                        <p>We implement: AES-256 encryption at rest, TLS 1.3 in transit, access controls, audit logging, breach notification procedures, and regular security assessments.</p>
+
+                        <h3 style="color:var(--text-primary);margin:1rem 0 0.5rem;">8. Cookies</h3>
+                        <p>We use essential, functional, and analytics cookies. You can manage cookie preferences in your browser settings.</p>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">📋 Data Processing Locations</span></div>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span>🇧🇼 Botswana</span><span class="badge badge-success">Primary</span></div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span>🇿🇦 South Africa</span><span class="badge badge-info">Backup</span></div>
+                            <div style="display:flex;justify-content:space-between;padding:6px 0;"><span>🇪🇺 EU (GDPR)</span><span class="badge badge-info">Compliant</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">📊 Privacy Metrics</span></div>
+                        <div><strong>Consent Rate:</strong> 98%</div>
+                        <div class="progress-bar"><div class="progress-fill green" style="width:98%;"></div></div>
+                        <div style="margin-top:10px;"><strong>Data Subject Requests:</strong> 12 (all resolved)</div>
+                        <div style="margin-top:4px;"><strong>Breach Notifications:</strong> 0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PAGE: CONSENT MANAGEMENT -->
+            <!-- ============================================================ -->
+            <div class="page" id="page-consent">
+                <h2 style="margin-bottom:1rem;">✅ Consent Management</h2>
+                <p style="color:var(--text-muted);margin-bottom:1.5rem;">Track, record, and manage user consents across all processing activities.</p>
+
+                <div class="stat-grid">
+                    <div class="stat-card"><div class="value blue">1,247</div><div class="label">Total Consents</div></div>
+                    <div class="stat-card"><div class="value green">1,198</div><div class="label">Active Consents</div></div>
+                    <div class="stat-card"><div class="value yellow">49</div><div class="label">Withdrawn</div></div>
+                    <div class="stat-card"><div class="value green">100%</div><div class="label">Audit Coverage</div></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><span class="card-title">📋 Consent Records</span><button class="btn btn-primary btn-sm" onclick="recordConsent()">+ Record Consent</button></div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>User ID</th><th>Purpose</th><th>Date Given</th><th>Method</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="consentTable">
+                                <tr>
+                                    <td>#U-1234</td><td>Identity Verification</td><td>2026-07-15</td><td>Checkbox</td>
+                                    <td><span class="badge badge-success">Active</span></td>
+                                    <td><button class="btn btn-outline btn-sm" onclick="withdrawConsent(this)">Withdraw</button></td>
+                                </tr>
+                                <tr>
+                                    <td>#U-5678</td><td>Marketing Communications</td><td>2026-07-10</td><td>Checkbox</td>
+                                    <td><span class="badge badge-success">Active</span></td>
+                                    <td><button class="btn btn-outline btn-sm" onclick="withdrawConsent(this)">Withdraw</button></td>
+                                </tr>
+                                <tr>
+                                    <td>#U-9012</td><td>Data Processing (DPA)</td><td>2026-07-01</td><td>Clickwrap</td>
+                                    <td><span class="badge badge-success">Active</span></td>
+                                    <td><button class="btn btn-outline btn-sm" onclick="withdrawConsent(this)">Withdraw</button></td>
+                                </tr>
+                                <tr>
+                                    <td>#U-3456</td><td>Fraud Detection</td><td>2026-06-28</td><td>Checkbox</td>
+                                    <td><span class="badge badge-warning">Withdrawn</span></td>
+                                    <td><span class="badge badge-neutral">Expired</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PAGE: REPORTS -->
+            <!-- ============================================================ -->
+            <div class="page" id="page-reports">
+                <h2 style="margin-bottom:1rem;">📊 Compliance Reports</h2>
+                <p style="color:var(--text-muted);margin-bottom:1.5rem;">Generate and export compliance, risk, and audit reports.</p>
+
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">📋 DPA Compliance Report</span></div>
+                        <p style="color:var(--text-muted);font-size:0.9rem;">Full Data Protection Act compliance status.</p>
+                        <button class="btn btn-primary btn-sm" onclick="generateReport('DPA')">Generate</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">⚠️ Risk Assessment Report</span></div>
+                        <p style="color:var(--text-muted);font-size:0.9rem;">Current risk scores across all domains.</p>
+                        <button class="btn btn-primary btn-sm" onclick="generateReport('Risk')">Generate</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">📜 Audit Log Export</span></div>
+                        <p style="color:var(--text-muted);font-size:0.9rem;">Complete audit trail for selected period.</p>
+                        <button class="btn btn-primary btn-sm" onclick="generateReport('Audit')">Export</button>
+                    </div>
+                </div>
+
+                <div class="card" id="reportOutput" style="display:none;">
+                    <div class="card-header"><span class="card-title">📄 Report Generated</span><button class="btn btn-outline btn-sm" onclick="downloadReport()">⬇ Download</button></div>
+                    <div id="reportContent" style="background:var(--bg-input);padding:1.5rem;border-radius:var(--radius);font-family:monospace;font-size:0.85rem;color:var(--text-secondary);white-space:pre-wrap;max-height:300px;overflow-y:auto;"></div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PAGE: SETTINGS -->
+            <!-- ============================================================ -->
+            <div class="page" id="page-settings">
+                <h2 style="margin-bottom:1rem;">⚙️ Compliance Settings</h2>
+                <p style="color:var(--text-muted);margin-bottom:1.5rem;">Configure compliance policies, thresholds, and notifications.</p>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">🔔 Alert Thresholds</span></div>
+                        <div class="form-group">
+                            <label class="form-label">Risk Score Threshold</label>
+                            <select class="form-select" id="riskThreshold">
+                                <option value="30">⚠️ 30 – Low</option>
+                                <option value="50" selected>⚠️ 50 – Medium</option>
+                                <option value="70">🚨 70 – High</option>
+                                <option value="90">🔥 90 – Critical</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Audit Retention (days)</label>
+                            <input type="number" class="form-input" value="365" id="auditRetention" />
+                        </div>
+                        <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">🔐 Data Protection Officer</span></div>
+                        <div class="form-group">
+                            <label class="form-label">DPO Name</label>
+                            <input type="text" class="form-input" value="Kefilwe N. (DPO)" id="dpoName" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">DPO Email</label>
+                            <input type="email" class="form-input" value="dpo@authetec.co.bw" id="dpoEmail" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Breach Notification Timeframe</label>
+                            <select class="form-select" id="breachTimeframe">
+                                <option value="24">24 hours</option>
+                                <option value="48" selected>48 hours</option>
+                                <option value="72">72 hours</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /main-content -->
+    </div><!-- /app-wrapper -->
+
+    <!-- ========== TERMS MODAL ========== -->
+    <div class="modal-overlay" id="termsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📄 Terms &amp; Conditions</h2>
+                <button class="modal-close" onclick="closeModal('termsModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary);line-height:1.8;">
+                    By using Authetec, you agree to our Terms &amp; Conditions. These terms govern your use of the platform,
+                    data processing activities, and your rights and obligations.
+                    <br><br>
+                    <strong>Key points:</strong><br>
+                    • You must provide accurate information<br>
+                    • All data is processed in compliance with the Botswana Data Protection Act<br>
+                    • You have the right to access, rectify, or delete your data<br>
+                    • Authetec may terminate accounts for violations<br>
+                    • These terms are governed by Botswana law
+                    <br><br>
+                    <a href="#" onclick="navigateTo('terms');closeModal('termsModal');return false;" style="color:var(--primary-light);">Read full Terms &amp; Conditions →</a>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('termsModal')">Decline</button>
+                <button class="btn btn-primary" onclick="acceptTerms()">✅ I Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== PRIVACY MODAL ========== -->
+    <div class="modal-overlay" id="privacyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>🔐 Privacy Policy</h2>
+                <button class="modal-close" onclick="closeModal('privacyModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary);line-height:1.8;">
+                    Authetec is committed to protecting your privacy. This policy explains how we collect, use, and protect your data.
+                    <br><br>
+                    <strong>What we collect:</strong> Identity documents, biometric data, contact info, financial details, device data.
+                    <br><br>
+                    <strong>How we use it:</strong> Verification, fraud detection, transactions, compliance, and support.
+                    <br><br>
+                    <strong>Your rights:</strong> Access, rectification, erasure, restriction, portability, and objection.
+                    <br><br>
+                    <a href="#" onclick="navigateTo('privacy');closeModal('privacyModal');return false;" style="color:var(--primary-light);">Read full Privacy Policy →</a>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('privacyModal')">Decline</button>
+                <button class="btn btn-primary" onclick="acceptPrivacy()">✅ I Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== CONSENT MODAL ========== -->
+    <div class="modal-overlay" id="consentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>✅ Consent Request</h2>
+                <button class="modal-close" onclick="closeModal('consentModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary);margin-bottom:1rem;">
+                    We need your consent to process your data for the following purposes:
+                </p>
+                <div class="form-group">
+                    <label class="form-check">
+                        <input type="checkbox" id="consentIdentity" checked />
+                        Identity Verification (required)
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-check">
+                        <input type="checkbox" id="consentMarketing" />
+                        Marketing Communications (optional)
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-check">
+                        <input type="checkbox" id="consentAnalytics" checked />
+                        Analytics &amp; Improvement (required)
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-check">
+                        <input type="checkbox" id="consentFraud" checked />
+                        Fraud Detection &amp; Prevention (required)
+                    </label>
+                </div>
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">
+                    You can withdraw consent at any time from your privacy settings.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('consentModal')">Decline</button>
+                <button class="btn btn-primary" onclick="saveConsent()">✅ Save Consents</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        // AUTHETEC COMPLIANCE ENGINE – FULL FUNCTIONALITY
+        // ================================================================
+
+        // ── STATE ──
+        const state = {
+            currentPage: 'dashboard',
+            auditFilter: 'all',
+            consents: {
+                identity: true,
+                marketing: false,
+                analytics: true,
+                fraud: true
+            },
+            riskScore: 18,
+            termsAccepted: false,
+            privacyAccepted: false,
+            processingActivities: [
+                { activity: 'Customer Onboarding', purpose: 'Identity Verification', categories: 'Name, ID, Photo, Address',
+                    retention: '7 years', status: 'Active' },
+                { activity: 'Transaction Processing', purpose: 'Payment Execution',
+                    categories: 'Financial, Payment details', retention: '10 years', status: 'Active' },
+                { activity: 'Fraud Detection', purpose: 'Risk Management', categories: 'Behavioural, Device data',
+                    retention: '3 years', status: 'Active' },
+                { activity: 'Marketing Analytics', purpose: 'Business Intelligence', categories: 'Usage patterns, Preferences',
+                    retention: '2 years', status: 'Opt‑out available' }
+            ],
+            risks: [
+                { id: '#R-001', category: 'Privacy', description: 'Consent records incomplete for 5% of users',
+                    likelihood: 'Medium', impact: 'Medium', score: 16, status: 'Monitoring' },
+                { id: '#R-002', category: 'Security', description: 'Legacy API endpoint lacks rate limiting',
+                    likelihood: 'Low', impact: 'High', score: 12, status: 'Mitigated' },
+                { id: '#R-003', category: 'Compliance', description: 'Data retention policy not fully documented',
+                    likelihood: 'Medium', impact: 'Low', score: 8, status: 'In review' }
+            ],
+            auditLogs: [
+                { time: '2026-07-21 14:23', user: 'admin@authetec', action: 'Policy Updated', category: 'Policy',
+                    details: 'DPA v2.3 revised', ip: '192.168.1.10' },
+                { time: '2026-07-21 12:05', user: 'compliance@authetec', action: 'Consent Granted', category: 'Consent',
+                    details: 'User #3456 consented', ip: '10.0.0.5' },
+                { time: '2026-07-21 09:47', user: 'system', action: 'Risk Assessment Run', category: 'Risk',
+                    details: 'Overall score: 18', ip: 'N/A' },
+                { time: '2026-07-20 16:30', user: 'data-officer@authetec', action: 'Data Export', category: 'Data',
+                    details: 'User #7890 requested export', ip: '192.168.1.25' },
+                { time: '2026-07-20 11:12', user: 'admin@authetec', action: 'Terms Accepted', category: 'Terms',
+                    details: 'New user #9012 accepted', ip: '10.0.0.8' }
+            ],
+            consentRecords: [
+                { userId: '#U-1234', purpose: 'Identity Verification', date: '2026-07-15', method: 'Checkbox',
+                    status: 'Active' },
+                { userId: '#U-5678', purpose: 'Marketing Communications', date: '2026-07-10', method: 'Checkbox',
+                    status: 'Active' },
+                { userId: '#U-9012', purpose: 'Data Processing (DPA)', date: '2026-07-01', method: 'Clickwrap',
+                    status: 'Active' },
+                { userId: '#U-3456', purpose: 'Fraud Detection', date: '2026-06-28', method: 'Checkbox',
+                    status: 'Withdrawn' }
+            ]
+        };
+
+        // ── NAVIGATION ──
+        function navigateTo(page) {
+            state.currentPage = page;
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const target = document.getElementById('page-' + page);
+            if (target) target.classList.add('active');
+
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            document.querySelectorAll('.sidebar-nav a[data-page]').forEach(a => {
+                if (a.dataset.page === page) a.classList.add('active');
+            });
+
+            const titles = {
+                dashboard: 'Compliance Dashboard',
+                dpa: 'Data Protection Act',
+                risk: 'Risk Assessment',
+                audit: 'Audit Trail',
+                terms: 'Terms & Conditions',
+                privacy: 'Privacy Policy',
+                consent: 'Consent Management',
+                reports: 'Compliance Reports',
+                settings: 'Settings'
+            };
+            document.getElementById('pageTitle').textContent = titles[page] || 'Compliance';
+
+            // Re‑render dynamic content
+            if (page === 'audit') renderAudit();
+            if (page === 'consent') renderConsent();
+            if (page === 'risk') renderRisk();
+
+            // Close mobile sidebar
+            document.querySelector('.sidebar')?.classList?.remove('open');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ── SIDEBAR CLICKS ──
+        document.querySelectorAll('.sidebar-nav a[data-page]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                navigateTo(this.dataset.page);
+            });
+        });
+
+        // ── TOAST NOTIFICATIONS ──
+        function showToast(message, type = 'info') {
+            const existing = document.querySelector('.toast');
+            if (existing) {
+                existing.style.animation = 'slideOut 0.4s ease forwards';
+                setTimeout(() => existing.remove(), 400);
+            }
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            t.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
+            document.body.appendChild(t);
+            setTimeout(() => {
+                if (t.parentNode) {
+                    t.style.animation = 'slideOut 0.4s ease forwards';
+                    setTimeout(() => t.remove(), 400);
+                }
+            }, 4500);
+        }
+
+        // ── MODALS ──
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function acceptTerms() {
+            state.termsAccepted = true;
+            closeModal('termsModal');
+            showToast('✅ Terms & Conditions accepted!', 'success');
+            // Log audit
+            state.auditLogs.unshift({
+                time: new Date().toLocaleString(),
+                user: 'user@authetec',
+                action: 'Terms Accepted',
+                category: 'Terms',
+                details: 'Accepted v3.2',
+                ip: 'N/A'
+            });
+        }
+
+        function acceptPrivacy() {
+            state.privacyAccepted = true;
+            closeModal('privacyModal');
+            showToast('✅ Privacy Policy accepted!', 'success');
+            state.auditLogs.unshift({
+                time: new Date().toLocaleString(),
+                user: 'user@authetec',
+                action: 'Privacy Accepted',
+                category: 'Policy',
+                details: 'Accepted v2.4',
+                ip: 'N/A'
+            });
+        }
+
+        // ── CONSENT FUNCTIONS ──
+        function recordConsent() {
+            openModal('consentModal');
+        }
+
+        function saveConsent() {
+            state.consents.identity = document.getElementById('consentIdentity').checked;
+            state.consents.marketing = document.getElementById('consentMarketing').checked;
+            state.consents.analytics = document.getElementById('consentAnalytics').checked;
+            state.consents.fraud = document.getElementById('consentFraud').checked;
+
+            // Add a consent record
+            const userId = '#U-' + Math.floor(1000 + Math.random() * 9000);
+            state.consentRecords.unshift({
+                userId: userId,
+                purpose: 'Combined Consent',
+                date: new Date().toISOString().split('T')[0],
+                method: 'Consent Modal',
+                status: 'Active'
+            });
+
+            closeModal('consentModal');
+            showToast('✅ Consents saved successfully!', 'success');
+
+            state.auditLogs.unshift({
+                time: new Date().toLocaleString(),
+                user: 'user@authetec',
+                action: 'Consent Updated',
+                category: 'Consent',
+                details: `User ${userId} updated consents`,
+                ip: 'N/A'
+            });
+
+            renderConsent();
+        }
+
+        function withdrawConsent(btn) {
+            const row = btn.closest('tr');
+            if (!row) return;
+            if (confirm('Withdraw this consent?')) {
+                const statusCell = row.querySelectorAll('td')[4];
+                if (statusCell) {
+                    statusCell.innerHTML = '<span class="badge badge-warning">Withdrawn</span>';
+                    btn.replaceWith('<span class="badge badge-neutral">Expired</span>');
+                }
+                showToast('✅ Consent withdrawn', 'success');
+                state.auditLogs.unshift({
+                    time: new Date().toLocaleString(),
+                    user: 'admin@authetec',
+                    action: 'Consent Withdrawn',
+                    category: 'Consent',
+                    details: 'User consent withdrawn',
+                    ip: 'N/A'
+                });
+            }
+        }
+
+        function renderConsent() {
+            const table = document.getElementById('consentTable');
+            if (!table) return;
+            table.innerHTML = state.consentRecords.map(r => `
+                        <tr>
+                            <td>${r.userId}</td>
+                            <td>${r.purpose}</td>
+                            <td>${r.date}</td>
+                            <td>${r.method}</td>
+                            <td><span class="badge ${r.status === 'Active' ? 'badge-success' : 'badge-warning'}">${r.status}</span></td>
+                            <td>${r.status === 'Active' ? `<button class="btn btn-outline btn-sm" onclick="withdrawConsent(this)">Withdraw</button>` : '<span class="badge badge-neutral">Expired</span>'}</td>
+                        </tr>
+                    `).join('');
+        }
+
+        // ── RISK FUNCTIONS ──
+        function addRisk() {
+            const desc = prompt('Risk description:');
+            if (!desc) return;
+            const cat = prompt('Category (Security/Compliance/Privacy/Operational/Third-Party):') || 'Other';
+            const likelihood = prompt('Likelihood (Low/Medium/High):') || 'Medium';
+            const impact = prompt('Impact (Low/Medium/High):') || 'Medium';
+            const score = Math.floor(Math.random() * 30) + 5;
+            const status = 'Open';
+
+            state.risks.unshift({
+                id: '#R-' + String(state.risks.length + 1).padStart(3, '0'),
+                category: cat,
+                description: desc,
+                likelihood: likelihood,
+                impact: impact,
+                score: score,
+                status: status
+            });
+
+            showToast('✅ Risk added to register', 'success');
+            renderRisk();
+
+            state.auditLogs.unshift({
+                time: new Date().toLocaleString(),
+                user: 'admin@authetec',
+                action: 'Risk Added',
+                category: 'Risk',
+                details: desc,
+                ip: 'N/A'
+            });
+        }
+
+        function renderRisk() {
+            const table = document.getElementById('riskRegister');
+            if (!table) return;
+            const badgeMap = {
+                'Low': 'badge-success',
+                'Medium': 'badge-warning',
+                'High': 'badge-danger'
+            };
+            const statusMap = {
+                'Open': 'badge-danger',
+                'Monitoring': 'badge-info',
+                'Mitigated': 'badge-success',
+                'In review': 'badge-warning'
+            };
+            table.innerHTML = state.risks.map(r => `
+                        <tr>
+                            <td>${r.id}</td>
+                            <td>${r.category}</td>
+                            <td>${r.description}</td>
+                            <td><span class="badge ${badgeMap[r.likelihood] || 'badge-neutral'}">${r.likelihood}</span></td>
+                            <td><span class="badge ${badgeMap[r.impact] || 'badge-neutral'}">${r.impact}</span></td>
+                            <td><span class="badge ${r.score > 20 ? 'badge-danger' : r.score > 10 ? 'badge-warning' : 'badge-success'}">${r.score}</span></td>
+                            <td><span class="badge ${statusMap[r.status] || 'badge-neutral'}">${r.status}</span></td>
+                        </tr>
+                    `).join('');
+        }
+
+        // ── AUDIT ──
+        function filterAudit(category) {
+            state.auditFilter = category;
+            renderAudit();
+        }
+
+        function renderAudit() {
+            const table = document.getElementById('auditTable');
+            if (!table) return;
+            let logs = state.auditLogs;
+            if (state.auditFilter !== 'all') {
+                logs = logs.filter(l => l.category.toLowerCase() === state.auditFilter);
+            }
+            const badgeMap = {
+                'Policy': 'badge-info',
+                'Consent': 'badge-success',
+                'Risk': 'badge-warning',
+                'Data': 'badge-info',
+                'Terms': 'badge-neutral'
+            };
+            table.innerHTML = logs.map(l => `
+                        <tr>
+                            <td>${l.time}</td>
+                            <td>${l.user}</td>
+                            <td>${l.action}</td>
+                            <td><span class="badge ${badgeMap[l.category] || 'badge-neutral'}">${l.category}</span></td>
+                            <td>${l.details}</td>
+                            <td>${l.ip}</td>
+                        </tr>
+                    `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No events found</td></tr>';
+        }
+
+        // ── PROCESSING ACTIVITIES ──
+        function addProcessingActivity() {
+            const activity = prompt('Activity name:');
+            if (!activity) return;
+            const purpose = prompt('Purpose:') || 'General';
+            const categories = prompt('Data categories (comma separated):') || 'Various';
+            const retention = prompt('Retention period:') || '5 years';
+            state.processingActivities.unshift({ activity, purpose, categories, retention, status: 'Active' });
+            showToast('✅ Processing activity added', 'success');
+            renderProcessingActivities();
+            state.auditLogs.unshift({
+                time: new Date().toLocaleString(),
+                user: 'admin@authetec',
+                action: 'Processing Activity Added',
+                category: 'Data',
+                details: activity,
+                ip: 'N/A'
+            });
+        }
+
+        function renderProcessingActivities() {
+            const table = document.getElementById('processingRegister');
+            if (!table) return;
+            table.innerHTML = state.processingActivities.map(p => `
+                        <tr>
+                            <td>${p.activity}</td>
+                            <td>${p.purpose}</td>
+                            <td>${p.categories}</td>
+                            <td>${p.retention}</td>
+                            <td><span class="badge ${p.status === 'Active' ? 'badge-success' : 'badge-warning'}">${p.status}</span></td>
+                        </tr>
+                    `).join('');
+        }
+
+        // ── REPORTS ──
+        function generateReport(type) {
+            const output = document.getElementById('reportOutput');
+            const content = document.getElementById('reportContent');
+            if (!output || !content) return;
+
+            let report = `=== AUTHE TEC COMPLIANCE REPORT ===\n`;
+            report += `Generated: ${new Date().toLocaleString()}\n`;
+            report += `Type: ${type}\n`;
+            report += `==================================\n\n`;
+
+            if (type === 'DPA') {
+                report += `DATA PROTECTION ACT COMPLIANCE STATUS\n`;
+                report += `──────────────────────────────────────\n`;
+                report += `Overall Score: 94%\n`;
+                report += `Active Policies: 18\n`;
+                report += `Consents Recorded: ${state.consentRecords.length}\n`;
+                report += `Processing Activities: ${state.processingActivities.length}\n`;
+                report += `Data Subject Rights: All implemented\n`;
+                report += `Status: ✅ Compliant\n`;
+            } else if (type === 'Risk') {
+                report += `RISK ASSESSMENT REPORT\n`;
+                report += `─────────────────────\n`;
+                report += `Overall Risk Score: ${state.riskScore}\n`;
+                report += `Total Risks: ${state.risks.length}\n`;
+                report += `Open Risks: ${state.risks.filter(r => r.status === 'Open').length}\n`;
+                report += `Mitigated Risks: ${state.risks.filter(r => r.status === 'Mitigated').length}\n`;
+                report += `\nRisk Register:\n`;
+                state.risks.forEach(r => {
+                    report += `  ${r.id} | ${r.category} | ${r.description} | Score: ${r.score}\n`;
+                });
+            } else if (type === 'Audit') {
+                report += `AUDIT LOG EXPORT\n`;
+                report += `────────────────\n`;
+                report += `Total Events: ${state.auditLogs.length}\n`;
+                report += `\nEvent Log:\n`;
+                state.auditLogs.forEach(l => {
+                    report += `  ${l.time} | ${l.user} | ${l.action} | ${l.category}\n`;
+                });
+            }
+
+            content.textContent = report;
+            output.style.display = 'block';
+            output.scrollIntoView({ behavior: 'smooth' });
+            showToast(`✅ ${type} report generated`, 'success');
+
+            state.auditLogs.unshift({
+                time: new Date().toLocaleString(),
+                user: 'admin@authetec',
+                action: 'Report Generated',
+                category: 'Policy',
+                details: `${type} report exported`,
+                ip: 'N/A'
+            });
+        }
+
+        function downloadReport() {
+            const content = document.getElementById('reportContent');
+            if (!content || !content.textContent) {
+                showToast('No report to download', 'warning');
+                return;
+            }
+            const blob = new Blob([content.textContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `compliance-report-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('📥 Report downloaded', 'success');
+        }
+
+        // ── EXPORT BUTTON ──
+        function exportReport() {
+            generateReport('Audit');
+        }
+
+        // ── RUN COMPLIANCE CHECK ──
+        function runComplianceCheck() {
+            showToast('🔄 Running full compliance check...', 'info');
+            setTimeout(() => {
+                const score = Math.floor(Math.random() * 10) + 90;
+                showToast(`✅ Compliance check complete: ${score}% compliant`, 'success');
+                state.auditLogs.unshift({
+                    time: new Date().toLocaleString(),
+                    user: 'system',
+                    action: 'Compliance Check',
+                    category: 'Policy',
+                    details: `Score: ${score}%`,
+                    ip: 'N/A'
+                });
+            }, 2000);
+        }
+
+        // ── SAVE SETTINGS ──
+        function saveSettings() {
+            showToast('💾 Settings saved successfully!', 'success');
+            state.auditLogs.unshift({
+                time: new Date().toLocaleString(),
+                user: 'admin@authetec',
+                action: 'Settings Updated',
+                category: 'Policy',
+                details: 'Compliance settings changed',
+                ip: 'N/A'
+            });
+        }
+
+        // ── KEYBOARD SHORTCUTS ──
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+            }
+        });
+
+        // ── CLOSE MODALS ON OVERLAY CLICK ──
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+            m.addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('active');
+            });
+        });
+
+        // ── INIT ──
+        document.addEventListener('DOMContentLoaded', function() {
+            renderConsent();
+            renderRisk();
+            renderAudit();
+            renderProcessingActivities();
+
+            // Show terms modal on first visit
+            if (!localStorage.getItem('authetec_terms_accepted')) {
+                setTimeout(() => openModal('termsModal'), 600);
+            } else {
+                state.termsAccepted = true;
+            }
+
+            if (!localStorage.getItem('authetec_privacy_accepted')) {
+                setTimeout(() => openModal('privacyModal'), 900);
+            } else {
+                state.privacyAccepted = true;
+            }
+
+            console.log('✅ Authetec Compliance Hub fully loaded');
+            console.log('📦 Modules: DPA | Risk | Audit | Terms | Privacy | Consent | Reports | Settings');
+            console.log('🛡️ Data Protection Act compliant | GDPR aligned');
+        });
+
+        // ── PERSIST TERMS ACCEPTANCE ──
+        window.acceptTerms = function() {
+            state.termsAccepted = true;
+            localStorage.setItem('authetec_terms_accepted', 'true');
+            closeModal('termsModal');
+            showToast('✅ Terms & Conditions accepted!', 'success');
+            state.auditLogs.unshift({
+                time: new Date().toLocaleString(),
+                user: 'user@authetec',
+                action: 'Terms Accepted',
+                category: 'Terms',
+                details: 'Accepted v3.2',
+                ip: 'N/A'
+            });
+        };
+
+        window.acceptPrivacy = function() {
+            state.privacyAccepted = true;
+            localStorage.setItem('authetec_privacy_accepted', 'true');
+            closeModal('privacyModal');
+            showToast('✅ Privacy Policy accepted!', 'success');
+            state.auditLogs.unshift({
+                time: new Date().toLocaleString(),
+                user: 'user@authetec',
+                action: 'Privacy Accepted',
+                category: 'Policy',
+                details: 'Accepted v2.4',
+                ip: 'N/A'
+            });
+        };
+
+        // ── EXPOSE GLOBALLY ──
+        window.navigateTo = navigateTo;
+        window.showToast = showToast;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.recordConsent = recordConsent;
+        window.saveConsent = saveConsent;
+        window.withdrawConsent = withdrawConsent;
+        window.addRisk = addRisk;
+        window.filterAudit = filterAudit;
+        window.addProcessingActivity = addProcessingActivity;
+        window.generateReport = generateReport;
+        window.downloadReport = downloadReport;
+        window.exportReport = exportReport;
+        window.runComplianceCheck = runComplianceCheck;
+        window.saveSettings = saveSettings;
+        window.acceptTerms = window.acceptTerms;
+        window.acceptPrivacy = window.acceptPrivacy;
+    </script>
+
+</body>
+</html>
