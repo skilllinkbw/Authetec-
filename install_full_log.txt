@@ -1,0 +1,99 @@
+Defaulting to user installation because normal site-packages is not writeable
+Collecting scipy
+  Using cached scipy-1.18.1-cp313-cp313-win_amd64.whl.metadata (61 kB)
+Collecting joblib
+  Using cached joblib-1.5.3-py3-none-any.whl.metadata (5.5 kB)
+Requirement already satisfied: pandas in C:\Users\DELL\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages (3.0.5)
+Collecting scikit-learn
+  Using cached scikit_learn-1.9.0-cp313-cp313-win_amd64.whl.metadata (11 kB)
+Collecting pillow
+  Using cached pillow-12.3.0-cp313-cp313-win_amd64.whl.metadata (9.3 kB)
+Collecting lightgbm
+  Using cached lightgbm-4.7.0-py3-none-win_amd64.whl.metadata (18 kB)
+Collecting shap
+  Downloading shap-0.52.0-cp312-abi3-win_amd64.whl.metadata (26 kB)
+Collecting opencv-python-headless
+  Using cached opencv_python_headless-5.0.0.93-cp37-abi3-win_amd64.whl.metadata (20 kB)
+Collecting redis
+  Downloading redis-8.1.0-py3-none-any.whl.metadata (16 kB)
+Collecting celery
+  Downloading celery-5.6.3-py3-none-any.whl.metadata (23 kB)
+Requirement already satisfied: numpy<2.8,>=2.0.0 in C:\Users\DELL\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages (from scipy) (2.5.2)
+Requirement already satisfied: python-dateutil>=2.8.2 in C:\Users\DELL\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages (from pandas) (2.9.0.post0)
+Requirement already satisfied: tzdata in C:\Users\DELL\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages (from pandas) (2026.3)
+Collecting narwhals>=2.0.1 (from scikit-learn)
+  Using cached narwhals-2.25.0-py3-none-any.whl.metadata (15 kB)
+Collecting threadpoolctl>=3.5.0 (from scikit-learn)
+  Using cached threadpoolctl-3.6.0-py3-none-any.whl.metadata (13 kB)
+Collecting tqdm>=4.27.0 (from shap)
+  Downloading tqdm-4.70.0-py3-none-any.whl.metadata (57 kB)
+Requirement already satisfied: packaging>20.9 in C:\Users\DELL\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages (from shap) (26.3)
+Collecting slicer==0.0.8 (from shap)
+  Downloading slicer-0.0.8-py3-none-any.whl.metadata (4.0 kB)
+Collecting numba (from shap)
+  Downloading numba-0.67.0-cp313-cp313-win_amd64.whl.metadata (2.8 kB)
+Collecting llvmlite (from shap)
+  Downloading llvmlite-0.49.0-cp313-cp313-win_amd64.whl.metadata (5.2 kB)
+Collecting cloudpickle (from shap)
+  Downloading cloudpickle-3.1.2-py3-none-any.whl.metadata (7.1 kB)
+Collecting billiard<5.0,>=4.2.1 (from celery)
+  Downloading billiard-4.2.4-py3-none-any.whl.metadata (4.8 kB)
+Collecting kombu>=5.6.0 (from celery)
+  Downloading kombu-5.6.2-py3-none-any.whl.metadata (3.5 kB)
+Collecting vine<6.0,>=5.1.0 (from celery)
+  Downloading vine-5.1.0-py3-none-any.whl.metadata (2.7 kB)
+Requirement already satisfied: click<9.0,>=8.1.2 in C:\Users\DELL\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages (from celery) (8.4.2)
+Collecting click-didyoumean>=0.3.0 (from celery)
+  Downloading click_didyoumean-0.3.1-py3-none-any.whl.metadata (3.9 kB)
+Collecting click-repl>=0.2.0 (from celery)
+  Downloading click_repl-0.3.0-py3-none-any.whl.metadata (3.6 kB)
+Collecting click-plugins>=1.1.1 (from celery)
+  Downloading click_plugins-1.1.1.2-py2.py3-none-any.whl.metadata (6.5 kB)
+Collecting tzlocal (from celery)
+  Downloading tzlocal-5.4.4-py3-none-any.whl.metadata (7.7 kB)
+Requirement already satisfied: colorama in C:\Users\DELL\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages (from click<9.0,>=8.1.2->celery) (0.4.6)
+Collecting prompt-toolkit>=3.0.36 (from click-repl>=0.2.0->celery)
+  Downloading prompt_toolkit-3.0.53-py3-none-any.whl.metadata (6.4 kB)
+Collecting amqp<6.0.0,>=5.1.1 (from kombu>=5.6.0->celery)
+  Downloading amqp-5.3.1-py3-none-any.whl.metadata (8.9 kB)
+Collecting wcwidth>=0.1.4 (from prompt-toolkit>=3.0.36->click-repl>=0.2.0->celery)
+  Downloading wcwidth-0.8.3-py3-none-any.whl.metadata (43 kB)
+Requirement already satisfied: six>=1.5 in C:\Users\DELL\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages (from python-dateutil>=2.8.2->pandas) (1.17.0)
+Downloading scipy-1.18.1-cp313-cp313-win_amd64.whl (36.6 MB)
+   ---------------------------------------- 36.6/36.6 MB 286.5 kB/s  0:02:47
+Using cached joblib-1.5.3-py3-none-any.whl (309 kB)
+Using cached scikit_learn-1.9.0-cp313-cp313-win_amd64.whl (8.2 MB)
+Downloading pillow-12.3.0-cp313-cp313-win_amd64.whl (7.2 MB)
+   ---------------------------------------- 7.2/7.2 MB 182.1 kB/s  0:00:40
+Using cached lightgbm-4.7.0-py3-none-win_amd64.whl (1.4 MB)
+Downloading shap-0.52.0-cp312-abi3-win_amd64.whl (499 kB)
+Downloading slicer-0.0.8-py3-none-any.whl (15 kB)
+Downloading opencv_python_headless-5.0.0.93-cp37-abi3-win_amd64.whl (43.8 MB)
+   ---------------------------------------- 43.8/43.8 MB 269.4 kB/s  0:04:06
+Downloading redis-8.1.0-py3-none-any.whl (560 kB)
+   ---------------------------------------- 560.6/560.6 kB 627.4 kB/s  0:00:01
+Downloading celery-5.6.3-py3-none-any.whl (451 kB)
+Downloading billiard-4.2.4-py3-none-any.whl (87 kB)
+Downloading vine-5.1.0-py3-none-any.whl (9.6 kB)
+Downloading click_didyoumean-0.3.1-py3-none-any.whl (3.6 kB)
+Downloading click_plugins-1.1.1.2-py2.py3-none-any.whl (11 kB)
+Downloading click_repl-0.3.0-py3-none-any.whl (10 kB)
+Downloading kombu-5.6.2-py3-none-any.whl (214 kB)
+Downloading amqp-5.3.1-py3-none-any.whl (50 kB)
+Using cached narwhals-2.25.0-py3-none-any.whl (467 kB)
+Downloading prompt_toolkit-3.0.53-py3-none-any.whl (392 kB)
+Using cached threadpoolctl-3.6.0-py3-none-any.whl (18 kB)
+Using cached tqdm-4.70.0-py3-none-any.whl (80 kB)
+Downloading wcwidth-0.8.3-py3-none-any.whl (331 kB)
+Using cached cloudpickle-3.1.2-py3-none-any.whl (22 kB)
+Downloading llvmlite-0.49.0-cp313-cp313-win_amd64.whl (41.9 MB)
+   ---------------------------------------- 41.9/41.9 MB 391.1 kB/s  0:02:18
+Using cached numba-0.67.0-cp313-cp313-win_amd64.whl (2.8 MB)
+Downloading tzlocal-5.4.4-py3-none-any.whl (18 kB)
+Installing collected packages: wcwidth, vine, tzlocal, tqdm, threadpoolctl, slicer, scipy, redis, pillow, opencv-python-headless, narwhals, llvmlite, joblib, cloudpickle, billiard, scikit-learn, prompt-toolkit, numba, lightgbm, click-plugins, click-didyoumean, amqp, shap, kombu, click-repl, celery
+  WARNING: The script tqdm.exe is installed in 'C:\Users\DELL\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\Scripts' which is not on PATH.
+  Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+ERROR: Could not install packages due to an OSError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\DELL\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python313\\site-packages\\redis-8.1.0.dist-info\\licenses\\LICENSE'
+Check the permissions.
+
+

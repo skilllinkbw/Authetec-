@@ -1,0 +1,50 @@
+{
+  "model": "Insurance Fraud (Pattern Adapter)",
+  "version": "benchmark@9b57aa27",
+  "dataset": "Synthetic Insurance Claim Data (reusable pattern)",
+  "dataset_version": "synthetic-v1",
+  "features": [
+    "Claim_Amount",
+    "Policy_Term",
+    "Police_Report_Filed",
+    "Financial_Hardship",
+    "High_Risk_Indicator",
+    "Age",
+    "Vehicle_Damage",
+    "Total_Claim_Amount"
+  ],
+  "splits": {
+    "train": "80% stratified",
+    "validation": "N/A",
+    "test": "20% stratified"
+  },
+  "metrics": {
+    "pr_auc": 0.7102661675740796,
+    "roc_auc": 0.9313725490196079,
+    "precision": 0.6666666666666666,
+    "recall": 0.6666666666666666,
+    "f1": 0.6666666666666666,
+    "false_positive_rate": 0.05,
+    "false_negative_rate": 0.05
+  },
+  "threshold": 0.5,
+  "latency_ms": 0.17567312534083612,
+  "leakage_notes": "No label leakage. Original repo used SMOTE after split.",
+  "reproducibility": {
+    "random_state": 42,
+    "git_commit": "9b57aa27174c90ee0fd8cf460dac77ca623997ae",
+    "license": "NOT FOUND (no license file in repo)",
+    "train_info": {
+      "model": "RandomForest",
+      "n_train": 640,
+      "n_test": 160
+    }
+  },
+  "limitations": [
+    "NOT insurance-specific",
+    "Metrics on synthetic data",
+    "Does not reproduce XGBoost/SVM"
+  ],
+  "generated_at": "2026-08-30T20:16:00.101959",
+  "model_id": "insurance_fraud_9b57aa27"
+}

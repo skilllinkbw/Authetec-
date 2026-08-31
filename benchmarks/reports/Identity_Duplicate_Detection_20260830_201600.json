@@ -1,0 +1,48 @@
+{
+  "model": "Identity Duplicate Detection",
+  "version": "benchmark@095b0da8",
+  "dataset": "Synthetic Identity Pairs (reusable pattern)",
+  "dataset_version": "synthetic-v1",
+  "features": [
+    "face_similarity",
+    "name_similarity",
+    "address_similarity",
+    "duplicate_flag",
+    "liveness_score",
+    "raw_fraud_score"
+  ],
+  "splits": {
+    "train": "80% stratified",
+    "validation": "N/A",
+    "test": "20% stratified"
+  },
+  "metrics": {
+    "pr_auc": 0.9949874686716792,
+    "roc_auc": 0.9992534527808884,
+    "precision": 0.7037037037037037,
+    "recall": 1.0,
+    "f1": 0.8260869565217391,
+    "false_positive_rate": 0.05,
+    "false_negative_rate": 0.0
+  },
+  "threshold": 0.5,
+  "latency_ms": 0.0018056249246001244,
+  "leakage_notes": "Score fusion with weighted signals. No temporal leakage.",
+  "reproducibility": {
+    "random_state": 42,
+    "git_commit": "095b0da82ec200a52c3875409761b447cf353e4d",
+    "license": "NOT FOUND (no license file in repo)",
+    "train_info": {
+      "model": "ScoreFusion-LR",
+      "n_train": 640,
+      "n_test": 160
+    }
+  },
+  "limitations": [
+    "Original uses InsightFace + ChromaDB (not reproduced here)",
+    "Contains sample biometric images in upstream repo (NOT committed)",
+    "Metrics on synthetic data"
+  ],
+  "generated_at": "2026-08-30T20:16:00.259910",
+  "model_id": "identity_duplicate_095b0da8"
+}
