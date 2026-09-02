@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Environment / secrets
+.env
+.env.local
+
+# Node / frontend build artifacts
+node_modules/
+frontend/dist/
+frontend/coverage/
+
+# Third-party reference repositories cloned for benchmark comparison.
+# These are external projects (some with their own .git) and are NOT part
+# of the Authetec implementation. Only Authetec's own benchmark adapters,
+# runner and generated reports under benchmarks/ are tracked.
+benchmarks/repo1_lightgbm/
+benchmarks/repo2_ensemble/
+benchmarks/repo3_pipeline/
+benchmarks/repo4_insurance/
+benchmarks/repo5_graph/
+benchmarks/repo6_identity/
