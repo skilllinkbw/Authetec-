@@ -2,9 +2,9 @@
 
 **Date:** 2026-09-03
 **Branch:** `authetec-foundation-review`
-**Final commit SHA (local HEAD == remote HEAD):** `1961fd69ea2f086ae105e910d6bc600ba02aa056` (short: `1961fd6`)
+**Final commit SHA:** see `git log -1` — final HEAD is the latest commit on `authetec-foundation-review` (local HEAD == remote HEAD, verified after the final push; the hard-coded improvements commit is below).
 **Improvements commit:** `119e2f7e28b066285c2f075538c1eef9b15a2871` (short: `119e2f7`)
-**This report:** committed in `1961fd6` itself; it is the final HEAD recorded at the time of the final push.
+**This report:** added in `1961fd6`; SHA-line correction in `2520561`.
 
 ## 1. Repository synchronization — inspection results (before any changes)
 
