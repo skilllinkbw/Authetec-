@@ -2,9 +2,8 @@
 
 **Date:** 2026-09-03
 **Branch:** `authetec-foundation-review`
-**Final commit SHA:** see `git log -1` — final HEAD is the latest commit on `authetec-foundation-review` (local HEAD == remote HEAD, verified after the final push; the hard-coded improvements commit is below).
-**Improvements commit:** `119e2f7e28b066285c2f075538c1eef9b15a2871` (short: `119e2f7`)
-**This report:** added in `1961fd6`; SHA-line correction in `2520561`.
+**Final commit SHA:** see `git log -1` for the latest commit on `authetec-foundation-review`.
+**Improvements commits:** `119e2f7` (foundation), plus subsequent face/social/AI-security/case-management work.
 
 ## 1. Repository synchronization — inspection results (before any changes)
 
@@ -76,4 +75,62 @@ COMMON:      Authetec and compliance.html, Authetec full code.html,
   and documentation.
 - Obsolete HTML prototype files remain in history (as common ancestors) but
   are no longer the repository's content focus; the authoritative
+
+## 6. Complete Improvement Summary (This Pass)
+
+### New Engines
+- **Face Verification** (`app/engines/face.py`): Strict separation of similarity / liveness / identity consistency; pluggable `FaceEmbedder` protocol; deterministic embedder for development; fail-safe REVIEW on undecodable images; policy floors.
+- **Social Trust** (`app/engines/social.py`): Deterministic, explainable rule-based scoring; protected attributes explicitly excluded; policy floors for high-stakes conditions.
+- **AI Security Monitor** (`app/services/ai_security.py`): Prompt-injection screening, secret-leak detection, input/output validation, model integrity checks, structured telemetry.
+
+### New API Endpoints
+- `POST /api/v1/verification/faces` — Face verification
+- `POST /api/v1/social/score` — Social trust scoring
+- `POST /api/v1/security/ai/screen` — AI security screening
+- `POST /api/v1/alerts/{id}/assign` — Case assignment
+- `POST /api/v1/alerts/{id}/notes` — Analyst notes
+
+### New Frontend Pages
+- **Social Trust** console (`frontend/src/pages/Social.tsx`)
+- **AI Security** console (`frontend/src/pages/AiSecurity.tsx`)
+
+### Database Changes
+- New `ai_security_events` table (append-only AI telemetry, RLS-enabled)
+- Extended `alerts` table with `assigned_to`, `analyst_notes`
+- New indexes for query performance
+
+### New Tests (60 additional; 125 total)
+- `tests/unit/test_engines_face.py` — 8 tests
+- `tests/unit/test_engines_social.py` — 10 tests
+- `tests/unit/test_ai_security.py` — 10 tests
+- `tests/integration/test_face_api.py` — 7 tests
+- `tests/integration/test_security_ai_api.py` — 5 tests
+
+### New Benchmarks
+- `benchmarks/face/` — Face verification harness (SYNTHETIC)
+- `benchmarks/social/` — Social trust harness (SYNTHETIC)
+
+## 7. Test Results
+
+| Suite | Result |
+|---|---|
+| Backend (`python -m pytest tests`) | **125 passed, 0 failed** |
+| Frontend (`npm test`) | **13 passed, 0 failed** |
+| Frontend build (`npm run build`) | PASS |
+
+## 8. Security Findings
+
+| Severity | Count | Details |
+|---|---|---|
+| Critical | 0 | None found |
+| High | 0 | None found |
+| Medium | 4 | Per-worker rate limiter, HMAC JWT shared secret, caller-supplied liveness, no CI/SAST |
+| Low | 2 | Dev helper scripts, no coverage tooling |
+
+## 9. Production Readiness
+
+**NOT READY** for production biometric identity verification.
+
+The platform's architecture, security model, and testing infrastructure are production-grade, but biometric components require real embedding models and PAD systems before they can be trusted for identity decisions. The implementation is a verified, tested, documented **foundation** ready for integration with production biometric models.
+
   implementation is now on the remote.

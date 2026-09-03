@@ -7,6 +7,8 @@ import Dashboard from "./pages/Dashboard";
 import Documents from "./pages/Documents";
 import Signatures from "./pages/Signatures";
 import Payments from "./pages/Payments";
+import Social from "./pages/Social";
+import AiSecurity from "./pages/AiSecurity";
 import Risk from "./pages/Risk";
 import Alerts from "./pages/Alerts";
 import Evidence from "./pages/Evidence";
@@ -22,6 +24,8 @@ export default function App() {
           <Route path="/documents" element={<Documents />} />
           <Route path="/signatures" element={<Signatures />} />
           <Route path="/payments" element={<Payments />} />
+          <Route path="/social" element={<Social />} />
+          <Route path="/ai-security" element={<AiSecurity />} />
           <Route path="/risk" element={<Risk />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/evidence" element={<Evidence />} />

@@ -68,11 +68,40 @@ create table if not exists public.alerts (
     created_at      timestamptz not null default now(),
     acknowledged_at timestamptz,
     resolved_at     timestamptz,
+    assigned_to     text not null default '',
+    analyst_notes   jsonb not null default '[]'::jsonb,
     metadata        jsonb not null default '{}'::jsonb
 );
 
 create index if not exists idx_alerts_tenant_status
     on public.alerts (tenant_id, status, created_at desc);
+create index if not exists idx_alerts_assignee
+    on public.alerts (assigned_to) where assigned_to <> '';
+
+-- ── ai_security_events (structured AI telemetry, append-only) ──────────
+-- Stores screening outcomes (scores, signals, verdict) but NEVER the raw
+-- screened text — prompts/outputs are not persisted for privacy reasons.
+create table if not exists public.ai_security_events (
+    screening_id            text primary key,
+    tenant_id               text not null,
+    mode                    text not null check (mode in ('prompt', 'output')),
+    decision                text not null
+                            check (decision in ('CLEAR', 'REVIEW', 'BLOCK')),
+    prompt_injection_score  numeric(5, 4) not null
+                            check (prompt_injection_score between 0 and 1),
+    secret_leak_score       numeric(5, 4) not null
+                            check (secret_leak_score between 0 and 1),
+    validation_valid        boolean not null default true,
+    correlation_id          text not null default '',
+    model_version           text not null default '',
+    signals                 jsonb not null default '[]'::jsonb,
+    created_at              timestamptz not null default now()
+);
+
+create index if not exists idx_ai_security_tenant_time
+    on public.ai_security_events (tenant_id, created_at desc);
+create index if not exists idx_ai_security_decision
+    on public.ai_security_events (decision);
 
 -- ── Row Level Security ──────────────────────────────────────────
 -- Default posture: DENY all client access. The backend uses the
@@ -83,6 +112,7 @@ create index if not exists idx_alerts_tenant_status
 alter table public.audit_events enable row level security;
 alter table public.evidence     enable row level security;
 alter table public.alerts       enable row level security;
+alter table public.ai_security_events enable row level security;
 
 -- Example (review before enabling):
 -- create policy tenant_scoped_alerts on public.alerts

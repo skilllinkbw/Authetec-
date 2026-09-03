@@ -67,7 +67,10 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
 
     # Routers
-    from app.api.v1 import alerts, audit, evidence, health, payments, risk, verification
+    from app.api.v1 import (  # noqa: F401
+        alerts, audit, evidence, health, payments, risk, security, social,
+        verification,
+    )
     app.include_router(health.router)
     app.include_router(verification.router, prefix="/api/v1")
     app.include_router(payments.router, prefix="/api/v1")
@@ -75,4 +78,6 @@ def create_app() -> FastAPI:
     app.include_router(alerts.router, prefix="/api/v1")
     app.include_router(audit.router, prefix="/api/v1")
     app.include_router(evidence.router, prefix="/api/v1")
+    app.include_router(social.router, prefix="/api/v1")
+    app.include_router(security.router, prefix="/api/v1")
     return app

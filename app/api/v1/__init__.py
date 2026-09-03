@@ -1,4 +1,10 @@
 """API v1 routers."""
-from . import health, verification, payments, risk, alerts, audit, evidence  # noqa: F401
+from . import (  # noqa: F401
+    health, verification, payments, risk, alerts, audit, evidence,
+    social, security,
+)
 
-__all__ = ["health", "verification", "payments", "risk", "alerts", "audit", "evidence"]
+__all__ = [
+    "health", "verification", "payments", "risk", "alerts", "audit",
+    "evidence", "social", "security",
+]

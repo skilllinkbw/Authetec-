@@ -4,14 +4,17 @@
  */
 import { apiRequest } from "./client";
 import type {
-  Alert, AuditEntry, EngineResult, Evidence, HealthOut, SignatureResult,
+  AiScreenResult, Alert, AuditEntry, EngineResult, Evidence, HealthOut,
+  SignatureResult, SocialScoreResult,
 } from "../../types/api";
 
 export interface AlertList { alerts: Alert[]; count: number }
 export interface AuditList { entries: AuditEntry[]; count: number }
 export interface AuditIntegrity { valid: boolean; entries_checked: number; checked_at: string }
 export interface EvidenceList { evidence: Evidence[]; count: number }
-export interface AlertAction { alert_id: string; status: string; updated: boolean }
+export interface AlertAction {
+  alert_id: string; status: string; updated: boolean; assigned_to?: string | null;
+}
 export interface PaymentScore { transaction_id: string; result: EngineResult }
 
 export function getHealth(): Promise<HealthOut> {
@@ -58,6 +61,28 @@ export function acknowledgeAlert(alertId: string): Promise<AlertAction> {
 export function resolveAlert(alertId: string): Promise<AlertAction> {
   return apiRequest<AlertAction>(`/api/v1/alerts/${encodeURIComponent(alertId)}/resolve`,
     { method: "POST" });
+}
+
+export function assignAlert(alertId: string, assignee: string): Promise<AlertAction> {
+  return apiRequest<AlertAction>(`/api/v1/alerts/${encodeURIComponent(alertId)}/assign`,
+    { method: "POST", body: JSON.stringify({ assignee }) });
+}
+
+export function addAlertNote(alertId: string, text: string,
+  author = "analyst"): Promise<AlertAction> {
+  return apiRequest<AlertAction>(`/api/v1/alerts/${encodeURIComponent(alertId)}/notes`,
+    { method: "POST", body: JSON.stringify({ text, author }) });
+}
+
+export function scoreSocial(profile: Record<string, unknown>): Promise<SocialScoreResult> {
+  return apiRequest<SocialScoreResult>("/api/v1/social/score",
+    { method: "POST", body: JSON.stringify(profile) });
+}
+
+export function screenAi(payload: { text: string; context?: string; mode?: string })
+  : Promise<AiScreenResult> {
+  return apiRequest<AiScreenResult>("/api/v1/security/ai/screen",
+    { method: "POST", body: JSON.stringify(payload) });
 }
 
 export function listAudit(limit = 50): Promise<AuditList> {

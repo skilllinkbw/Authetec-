@@ -29,6 +29,7 @@ EVENT_TYPES = {
     "face.verify", "media.analyze", "identity.verify",
     "social.monitor", "social.alert",
     "payment.score", "fraud.decision",
+    "ai.screen", "ai.model_integrity",
     "alert.created", "alert.acknowledged", "alert.resolved",
     "case.created", "case.updated",
     "config.change", "model.register", "model.approve",

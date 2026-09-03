@@ -1,0 +1,60 @@
+{
+  "model": "LightGBM Fraud Detection",
+  "version": "benchmark@f257efc2",
+  "dataset": "Synthetic Financial Transactions (Kaggle schema replica)",
+  "dataset_version": "synthetic-v1",
+  "features": [
+    "amount",
+    "oldbalanceOrg",
+    "delta_orig",
+    "delta_dest",
+    "is_weekend",
+    "is_night",
+    "sender_avg_amount",
+    "sender_txn_count",
+    "balance_jump_flag",
+    "delta_orig_ratio",
+    "is_c_to_c",
+    "type_CASH_IN",
+    "type_CASH_OUT",
+    "type_DEBIT",
+    "type_PAYMENT",
+    "type_TRANSFER"
+  ],
+  "splits": {
+    "train": "80% stratified",
+    "validation": "N/A",
+    "test": "20% stratified holdout"
+  },
+  "metrics": {
+    "pr_auc": 0.26071788562609577,
+    "roc_auc": 0.8951096375555723,
+    "precision": 0.23809523809523808,
+    "recall": 0.21739130434782608,
+    "f1": 0.22727272727272727,
+    "false_positive_rate": 0.02666666666666667,
+    "false_negative_rate": 0.03
+  },
+  "threshold": 0.5,
+  "latency_ms": 0.02627783333688664,
+  "leakage_notes": "Excluded newbalance* and isFlaggedFraud. SMOTE applied only after split.",
+  "reproducibility": {
+    "random_state": 42,
+    "git_commit": "f257efc2973e7007aca146edd7f5621930343a0c",
+    "license": "MIT",
+    "train_info": {
+      "model": "LightGBM",
+      "smote_applied": false,
+      "n_train": 2400,
+      "n_test": 600,
+      "fraud_rate_test": 0.03833333333333333
+    }
+  },
+  "limitations": [
+    "Metrics on synthetic data, NOT original Kaggle dataset",
+    "Reported repo metrics (0.9885 P / 0.9988 R) are benchmark-test-set values",
+    "Latency approximated, not measured in production"
+  ],
+  "generated_at": "2026-09-03T22:32:27.115639",
+  "model_id": "lightgbm_fraud_f257efc2"
+}

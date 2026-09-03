@@ -43,6 +43,13 @@ def health() -> HealthOut:
         detail=get_model_registry().health(),
     ))
 
+    from app.services.ai_security import get_ai_security_monitor
+    components.append(ComponentHealth(
+        name="ai_security",
+        status="ok",
+        detail=get_ai_security_monitor().health(),
+    ))
+
     degraded = any(c.status != "ok" for c in components)
     return HealthOut(
         app=settings.app_name,

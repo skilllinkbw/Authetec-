@@ -29,10 +29,14 @@ const NAV: NavGroup[] = [
   ]},
   { group: "Intelligence", items: [
     { to: "/payments", label: "Payment Fraud" },
+    { to: "/social", label: "Social Trust" },
     { to: "/risk", label: "Risk Intelligence" },
   ]},
+  { group: "Security", items: [
+    { to: "/ai-security", label: "AI Security" },
+  ]},
   { group: "Operations", items: [
-    { to: "/alerts", label: "Alerts" },
+    { to: "/alerts", label: "Alerts & Cases" },
     { to: "/evidence", label: "Evidence" },
     { to: "/audit", label: "Audit" },
     { to: "/developers", label: "Developers" },

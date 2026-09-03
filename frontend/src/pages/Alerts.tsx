@@ -21,7 +21,6 @@ export default function Alerts() {
   const list = useApi(() => listAlerts(statusFilter || undefined), [statusFilter]);
   const [actionError, setActionError] = useState<ApiError | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
-
   async function act(alert: Alert, action: "acknowledge" | "resolve") {
     setBusyId(alert.alert_id);
     setActionError(null);

@@ -42,6 +42,8 @@ class Alert:
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     acknowledged_at: Optional[str] = None
     resolved_at: Optional[str] = None
+    assigned_to: Optional[str] = None
+    notes: List[Dict[str, str]] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -89,6 +91,8 @@ class AlertEngine:
                 "status": alert.status,
                 "created_at": alert.created_at,
                 "metadata": alert.metadata,
+                "assigned_to": alert.assigned_to or "",
+                "analyst_notes": alert.notes,
             }])
         except Exception as e:
             logger.warning("Alert persistence failed: %s (kept in memory)", e)
@@ -101,7 +105,9 @@ class AlertEngine:
                 "alerts",
                 {"status": alert.status,
                  "acknowledged_at": alert.acknowledged_at,
-                 "resolved_at": alert.resolved_at},
+                 "resolved_at": alert.resolved_at,
+                 "assigned_to": alert.assigned_to or "",
+                 "analyst_notes": alert.notes},
                 alert_id=alert.alert_id,
             )
         except Exception as e:
@@ -175,6 +181,32 @@ class AlertEngine:
             if a.alert_id == alert_id and a.tenant_id == tenant_id:
                 a.status = "RESOLVED"
                 a.resolved_at = datetime.now(timezone.utc).isoformat()
+                self._persist_status(a)
+                return a
+        return None
+
+    def assign(self, alert_id: str, tenant_id: str, assignee: str) -> Optional[Alert]:
+        """Assign an open case to an analyst or work queue."""
+        for a in self._alerts:
+            if a.alert_id == alert_id and a.tenant_id == tenant_id:
+                a.assigned_to = assignee
+                if a.status == "OPEN":
+                    a.status = "ACKNOWLEDGED"
+                    a.acknowledged_at = a.acknowledged_at or datetime.now(timezone.utc).isoformat()
+                self._persist_status(a)
+                return a
+        return None
+
+    def add_note(self, alert_id: str, tenant_id: str,
+                 text: str, author: str = "analyst") -> Optional[Alert]:
+        """Append an immutable analyst note (author + text + timestamp)."""
+        for a in self._alerts:
+            if a.alert_id == alert_id and a.tenant_id == tenant_id:
+                a.notes.append({
+                    "author": author,
+                    "text": text,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                })
                 self._persist_status(a)
                 return a
         return None

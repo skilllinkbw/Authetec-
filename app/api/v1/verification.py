@@ -12,7 +12,10 @@ from app.core.config import get_settings
 from app.engines.document import DocumentEngine, DocumentInput
 from app.engines.signature import SignatureEngine, SignatureSample, _b64_decode
 from app.models.risk import Decision, Severity
-from app.schemas import EngineResultOut, SignatureEnrollIn, SignatureOut, SignatureVerifyIn
+from app.schemas import (
+    EngineResultOut, SignatureEnrollIn, SignatureOut, SignatureVerifyIn,
+    FaceVerifyIn,
+)
 
 logger = logging.getLogger("authetec.api.verification")
 router = APIRouter(tags=["verification"])
@@ -123,3 +126,60 @@ def verify_signature(
         signature_id=result.extra.get("signature_id", ""),
         result=_result_out(result),
     )
+
+
+@router.post(
+    "/verification/faces",
+    response_model=EngineResultOut,
+    summary="Verify a candidate face against a reference face",
+    description=(
+        "Evaluates face similarity, liveness signals and identity "
+        "consistency as separate concerns. Raw images and embeddings are "
+        "never persisted or echoed back."
+    ),
+)
+def verify_face(
+    payload: FaceVerifyIn,
+    tenant: TenantContext = Depends(get_tenant_context),
+) -> EngineResultOut:
+    from app.engines.face import (
+        FaceMatchInput, FaceVerificationEngine, LivenessCheck, _b64_decode,
+    )
+
+    # Strict base64 validation up front: malformed payloads are a client
+    # error (400), while valid-base64-but-undecodable images fail safe
+    # inside the engine as a REVIEW decision.
+    try:
+        _b64_decode(payload.reference_image_b64)
+        _b64_decode(payload.candidate_image_b64)
+    except ValueError as e:
+        raise BadRequestError(str(e)) from e
+
+    engine = FaceVerificationEngine()
+    match = FaceMatchInput(
+        reference_image_b64=payload.reference_image_b64,
+        candidate_image_b64=payload.candidate_image_b64,
+        liveness_checks=[
+            LivenessCheck(name=c.name, passed=c.passed, score=c.score)
+            for c in payload.liveness_checks
+        ],
+        declared_identity_match=payload.declared_identity_match,
+    )
+    result = engine.verify(match, tenant_id=tenant.tenant_id)
+
+    if result.decision == Decision.BLOCK:
+        try:
+            from app.services.alerts import get_alert_engine
+            get_alert_engine().create(
+                tenant_id=tenant.tenant_id,
+                alert_type="face_verification_failure",
+                severity=Severity.HIGH,
+                risk_score=result.risk_score,
+                source="face",
+                evidence_ids=[],
+                message="; ".join(result.reasons[:2]),
+                metadata={"similarity": result.extra.get("similarity")},
+            )
+        except Exception as e:  # alerting must never break verification
+            logger.debug("face alert skipped: %s", e)
+    return _result_out(result)

@@ -35,6 +35,12 @@ export interface HealthOut {
   components: { name: string; status: string; detail: Record<string, unknown> }[];
 }
 
+export interface AlertNote {
+  author: string;
+  text: string;
+  created_at: string;
+}
+
 export interface Alert {
   alert_id: string;
   tenant_id: string;
@@ -48,6 +54,8 @@ export interface Alert {
   created_at: string;
   acknowledged_at: string | null;
   resolved_at: string | null;
+  assigned_to: string | null;
+  notes: AlertNote[];
   metadata: Record<string, unknown>;
 }
 
@@ -82,4 +90,29 @@ export interface SignatureResult {
   signature_id: string;
   result: EngineResult;
   metadata?: Record<string, unknown>;
+}
+
+export interface AiScreenSignal {
+  name: string;
+  detail: string;
+  severity: number;
+}
+
+export interface AiScreenResult {
+  screening_id: string;
+  mode: "prompt" | "output";
+  decision: Decision;
+  prompt_injection_score: number;
+  secret_leak_score: number;
+  validation_valid: boolean;
+  validation_notes: string[];
+  signals: AiScreenSignal[];
+  reasons: string[];
+  model_version: string;
+  timestamp: string;
+}
+
+export interface SocialScoreResult {
+  profile_id: string;
+  result: EngineResult;
 }
