@@ -26,6 +26,32 @@ def _result_out(result) -> EngineResultOut:
     return EngineResultOut.model_validate(result.to_dict())
 
 
+# Mirrors engines.document.MAX_LENGTH; enforced at the API boundary BEFORE
+# the body is fully buffered, defending against oversized uploads.
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+_UPLOAD_CHUNK = 1024 * 1024
+
+
+async def _read_limited(file: UploadFile) -> bytes:
+    """Stream an upload with a hard size cap.
+
+    ``UploadFile.read()`` buffers the whole body; a malicious client can
+    stream an arbitrarily large file unless we cap it while reading.
+    """
+    chunks: list[bytes] = []
+    total = 0
+    while True:
+        chunk = await file.read(_UPLOAD_CHUNK)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > MAX_UPLOAD_BYTES:
+            # Abort before accumulating the oversized body in memory.
+            raise BadRequestError("File exceeds 20 MB upload limit")
+        chunks.append(chunk)
+    return b"".join(chunks)
+
+
 @router.post(
     "/verification/documents",
     response_model=EngineResultOut,
@@ -36,7 +62,7 @@ async def verify_document(
     expected_type: str = "",
     tenant: TenantContext = Depends(get_tenant_context),
 ) -> EngineResultOut:
-    content = await file.read()
+    content = await _read_limited(file)
     declared = file.content_type or ""
     if declared and declared not in get_settings().allowed_image_types:
         # Content sniffing below is authoritative; a wrong declaration with
@@ -201,7 +227,7 @@ async def verify_identity_document(
     country_code: str = "",
     tenant: TenantContext = Depends(get_tenant_context),
 ) -> EngineResultOut:
-    content = await file.read()
+    content = await _read_limited(file)
     declared = file.content_type or ""
     try:
         engine = IdentityDocumentEngine(tenant_id=tenant.tenant_id)

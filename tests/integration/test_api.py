@@ -196,6 +196,17 @@ class TestDocumentVerification:
         )
         assert r.status_code == 400
 
+    def test_oversized_upload_rejected_at_api_boundary(self):
+        # 20 MB + 1 byte: rejected by the streaming size cap in the API
+        # layer before the full body is buffered, regardless of content.
+        big = b"x" * (20 * 1024 * 1024 + 1)
+        r = client.post(
+            "/api/v1/verification/documents",
+            files={"file": ("huge.png", big, "image/png")},
+        )
+        assert r.status_code == 400
+        assert r.json()["code"] == "bad_request"
+
 
 class TestSignatures:
     def test_enroll_and_verify_roundtrip(self):
