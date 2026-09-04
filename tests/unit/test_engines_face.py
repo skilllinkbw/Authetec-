@@ -211,3 +211,93 @@ def test_no_raw_biometric_data_in_output(engine):
     # Raw image bytes or their base64 must never leak into the result.
     assert img_b64[:40] not in serialized
     assert _encode_b64(img[:20]) not in serialized
+# ── pluggable production provider interfaces ─────────────────────────────
+
+class _CropDetector:
+    """Fake detector: returns a central crop (as a detection would)."""
+
+    def __init__(self, size: int = 48) -> None:
+        self._size = size
+
+    def detect(self, image_bytes: bytes) -> list:
+        import cv2
+        import numpy as np
+        arr = np.frombuffer(image_bytes, dtype=np.uint8)
+        img = cv2.imdecode(arr, cv2.IMREAD_GRAYSCALE)
+        if img is None:
+            return []
+        h, w = img.shape[:2]
+        s = self._size
+        y0, x0 = max(0, (h - s) // 2), max(0, (w - s) // 2)
+        crop = img[y0:y0 + s, x0:x0 + s]
+        if crop.size == 0:
+            return []
+        ok, buf = cv2.imencode(".png", crop)
+        return [buf.tobytes()] if ok else []
+
+
+def test_detector_is_applied_before_embedding():
+    eng = FaceVerificationEngine(detector=_CropDetector(size=48))
+    img = _face_image(seed=11, size=96)
+    result = eng.verify(_match(reference_image_b64=img, candidate_image_b64=img))
+    assert result.decision == Decision.CLEAR
+    assert result.extra["similarity"] >= DEFAULT_MATCH_THRESHOLD
+
+
+def test_detector_finding_no_face_fails_safe():
+    class _EmptyDetector:
+        def detect(self, image_bytes):
+            return []
+
+    eng = FaceVerificationEngine(detector=_EmptyDetector())
+    img = _face_image(seed=11, size=96)
+    result = eng.verify(_match(reference_image_b64=img, candidate_image_b64=img))
+    assert result.decision == Decision.REVIEW
+    assert result.confidence <= 0.15
+
+
+def test_detector_or_aligner_failure_fails_safe():
+    class _BrokenDetector:
+        def detect(self, image_bytes):
+            raise RuntimeError("detector unavailable")
+
+    class _BrokenAligner:
+        def align(self, image_bytes):
+            raise RuntimeError("aligner unavailable")
+
+    img = _face_image(seed=3, size=96)
+    for eng in (FaceVerificationEngine(detector=_BrokenDetector()),
+                FaceVerificationEngine(aligner=_BrokenAligner())):
+        result = eng.verify(_match(reference_image_b64=img, candidate_image_b64=img))
+        assert result.decision == Decision.REVIEW
+        assert result.confidence <= 0.15
+
+
+def test_aligner_returning_none_fails_safe():
+    class _NoneAligner:
+        def align(self, image_bytes):
+            return None
+
+    eng = FaceVerificationEngine(aligner=_NoneAligner())
+    img = _face_image(seed=3, size=96)
+    result = eng.verify(_match(reference_image_b64=img, candidate_image_b64=img))
+    assert result.decision == Decision.REVIEW
+    assert result.confidence <= 0.15
+
+
+def test_provider_embedder_bypasses_fallback():
+    """Production embedders inject embeddings directly; the engine honours them."""
+    fixed = np.ones(64, dtype=np.float32)
+    fixed = fixed / np.linalg.norm(fixed)
+
+    class _ProviderEmbedder:
+        def embed(self, image_bytes: bytes):
+            return fixed
+
+    eng = FaceVerificationEngine(embedder=_ProviderEmbedder())
+    result = eng.verify(_match(
+        reference_embedding=fixed, candidate_embedding=fixed,
+        liveness_checks=[LivenessCheck(name="blink", passed=True)],
+        declared_identity_match=True,
+    ))
+    assert result.decision == Decision.CLEAR

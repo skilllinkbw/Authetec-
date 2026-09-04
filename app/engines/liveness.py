@@ -54,12 +54,22 @@ class LivenessResult:
     model_version: str = MODEL_VERSION
     processing_time_ms: float = 0.0
     notes: str = ""
+    # Audit trail fields (do not influence the decision directly).
+    timed_out: bool = False
+    audit_id: str = ""
 
 
 class LivenessDetector(Protocol):
-    """Protocol for pluggable liveness/PAD detectors."""
+    """Protocol for pluggable liveness/PAD detectors.
 
-    def check(self, image_bytes: bytes, *, challenge: Optional[str] = None) -> LivenessResult:
+    Production deployments inject a real, independently-validated PAD
+    system that conforms to this interface.  The return type is part of
+    the contract: callers must NEVER treat a missing/None liveness
+    result as "live".
+    """
+
+    def check(self, image_bytes: bytes, *, challenge: Optional[str] = None,
+              timeout_s: float = 10.0) -> LivenessResult:
         ...
 
 
@@ -71,10 +81,66 @@ class DeterministicLivenessDetector:
     real PAD system — production must use a proper liveness model.
     """
 
-    def __init__(self, threshold: float = 0.45) -> None:
-        self._threshold = threshold
+    DEFAULT_TIMEOUT_S = 10.0
 
-    def check(self, image_bytes: bytes, *, challenge: Optional[str] = None) -> LivenessResult:
+    def __init__(self, threshold: float = 0.45,
+                 timeout_s: float = DEFAULT_TIMEOUT_S) -> None:
+        self._threshold = threshold
+        self._timeout_s = float(timeout_s)
+
+    def check(self, image_bytes: bytes, *, challenge: Optional[str] = None,
+              timeout_s: Optional[float] = None) -> LivenessResult:
+        """Run PAD within a hard time budget.
+
+        A hang or timeout is treated as "not live" (never the reverse).
+
+        The worker is released without waiting on exit, so a genuinely
+        stuck worker can never block the caller past the time budget.
+        """
+        t0 = time.perf_counter()
+        limit = self._timeout_s if timeout_s is None else float(timeout_s)
+        if limit <= 0:
+            logger.warning("liveness non-positive time budget %.2fs", limit)
+            return self._timeout_result(t0)
+
+        from concurrent.futures import ThreadPoolExecutor
+        pool = ThreadPoolExecutor(
+            max_workers=1,
+            thread_name_prefix="authetec-pad",
+        )
+        try:
+            fut = pool.submit(self._do_check, image_bytes)
+            try:
+                return fut.result(timeout=limit)
+            except TimeoutError:
+                logger.warning("liveness PAD check timed out after %.2fs", limit)
+                return self._timeout_result(t0)
+        except Exception as e:
+            logger.debug("Liveness check error: %s", e)
+            return LivenessResult(
+                is_live=False, confidence=0.10,
+                attacks=[PresentationAttack("error", 0.5, "system", str(e))],
+                signals=[f"check error: {e}"],
+                processing_time_ms=(time.perf_counter() - t0) * 1000,
+                notes="Liveness check failed — treating as non-live",
+            )
+        finally:
+            # Never block the caller on a stuck worker.
+            pool.shutdown(wait=False)
+
+    @staticmethod
+    def _timeout_result(t_start: float) -> LivenessResult:
+        return LivenessResult(
+            is_live=False, confidence=0.10,
+            attacks=[PresentationAttack("timeout", 0.8, "system",
+                                        "PAD check exceeded time budget")],
+            signals=["pad_timeout"],
+            processing_time_ms=(time.perf_counter() - t_start) * 1000,
+            timed_out=True,
+            notes="Deterministic fallback — NOT production liveness detection (timeout)",
+        )
+
+    def _do_check(self, image_bytes: bytes) -> LivenessResult:
         t0 = time.perf_counter()
         signals: List[str] = []
         attacks: List[PresentationAttack] = []
@@ -101,7 +167,9 @@ class DeterministicLivenessDetector:
             normalized_variance = min(variance / 5000.0, 1.0)
 
             score = 0.6 * normalized_entropy + 0.4 * normalized_variance
-            is_live = score >= self._threshold
+            # bool(...) — score components are numpy scalars; the result
+            # field contract requires a real Python bool.
+            is_live = bool(score >= self._threshold)
 
             signals.append(f"entropy={entropy:.2f}")
             signals.append(f"variance={variance:.2f}")

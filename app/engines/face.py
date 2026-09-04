@@ -39,6 +39,7 @@ from typing import List, Optional, Protocol
 import numpy as np
 
 from app.core.config import get_settings
+from app.engines.ocr_pipeline import assess_image_quality
 from app.models.risk import Decision, EngineResult, Signal
 
 logger = logging.getLogger("authetec.face")
@@ -62,6 +63,35 @@ class FaceEmbedder(Protocol):
 
     def embed(self, image_bytes: bytes) -> Optional[np.ndarray]:
         """Return a unit-normalised embedding vector, or None on failure."""
+        ...
+
+
+class FaceDetector(Protocol):
+    """Production face-detection provider interface.
+
+    Authetec does NOT ship a detector — the deterministic fallback embedder
+    works on the whole image and performs no detection.  A production
+    deployment injects a detector (e.g. RetinaFace/MTCNN-based) that returns
+    zero or more tightly-cropped face images.  Returning an empty list means
+    "no face detected" and is treated as a fail-safe REVIEW signal.
+    """
+
+    def detect(self, image_bytes: bytes) -> Optional[List[bytes]]:
+        """Return cropped face images, [] if no face, None on failure."""
+        ...
+
+
+class FaceAligner(Protocol):
+    """Production face-alignment provider interface.
+
+    Alignment (e.g. similarity transform to canonical landmarks) is delegated
+    to an externally-provided implementation which is applied to each detected
+    face immediately before embedding.  Authetec ships no aligner; identity
+    may be used if the embedder already expects unaligned input.
+    """
+
+    def align(self, image_bytes: bytes) -> Optional[bytes]:
+        """Return an aligned face crop, or None if alignment failed."""
         ...
 
 
@@ -185,9 +215,16 @@ class FaceVerificationEngine:
       * Declared identity mismatch -> strong risk contribution
     """
 
-    def __init__(self, embedder: Optional[FaceEmbedder] = None) -> None:
+    def __init__(self, embedder: Optional[FaceEmbedder] = None,
+                 detector: Optional[FaceDetector] = None,
+                 aligner: Optional[FaceAligner] = None) -> None:
         self._settings = get_settings()
+        # Defaults keep the deterministic, non-production fallback that is
+        # clearly labelled as such.  Production pipelines inject a real
+        # embedder (and optionally detector/aligner) here.
         self._embedder = embedder or DeterministicFaceEmbedder()
+        self._detector = detector
+        self._aligner = aligner
         self._threshold = self._read_threshold()
 
     def _read_threshold(self) -> float:
@@ -225,6 +262,21 @@ class FaceVerificationEngine:
             ref = self._safe_embed(match.reference_image_b64, "reference")
         if cand is None and match.candidate_image_b64:
             cand = self._safe_embed(match.candidate_image_b64, "candidate")
+
+        # Audit-only image quality of supplied face photos.  These are
+        # informational signals only — they do NOT change the risk
+        # decision, preserving backward compatibility.  Quality gates
+        # that block decisions belong to a validated face model.
+        quality_issues: List[str] = []
+        for label, b64 in (("reference", match.reference_image_b64),
+                           ("candidate", match.candidate_image_b64)):
+            if not b64:
+                continue
+            try:
+                q = assess_image_quality(_b64_decode(b64))
+                quality_issues.extend(f"{label}:{i}" for i in q.issues)
+            except Exception:
+                quality_issues.append(f"{label}:quality_error")
 
         signals: List[Signal] = []
 
@@ -310,6 +362,10 @@ class FaceVerificationEngine:
                 "match_threshold": self._threshold,
                 "liveness_failed": failed_names,
                 "identity_match_declared": match.declared_identity_match,
+                # Audit-only: image-quality signals never affect the decision.
+                # "image_quality_issues" is deliberately omitted from decision
+                # logic pending a validated face model with quality gates.
+                "image_quality_issues": quality_issues,
                 # NOTE: no image bytes or raw embeddings are included here.
             },
         )
@@ -319,12 +375,29 @@ class FaceVerificationEngine:
 
     def _safe_embed(self, b64: str, which: str) -> Optional[np.ndarray]:
         try:
-            emb = self._embedder.embed(_b64_decode(b64))
+            raw = _b64_decode(b64)
+            data = raw
+            # Pluggable detection/alignment run only when a production
+            # provider is injected.  The deterministic fallback path is
+            # unchanged (no detection, whole-image embedding).
+            if self._detector is not None:
+                faces = self._detector.detect(raw)
+                if not faces:
+                    logger.debug("face detector found no face (%s)", which)
+                    return None
+                data = faces[0]
+            if self._aligner is not None:
+                aligned = self._aligner.align(data)
+                if aligned is None:
+                    logger.debug("face aligner failed (%s)", which)
+                    return None
+                data = aligned
+            emb = self._embedder.embed(data)
         except ValueError as e:
             logger.debug("face embed failed (%s): %s", which, e)
             return None
-        except Exception as e:  # embedder failure must never crash the API
-            logger.debug("face embedder error (%s): %s", which, e)
+        except Exception as e:  # provider failure must never crash the API
+            logger.debug("face provider error (%s): %s", which, e)
             return None
         return emb
 
