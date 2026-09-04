@@ -72,30 +72,14 @@ def validate_document(content: bytes, declared: str = "") -> str:
 
 
 def _ocr_text(content: bytes, content_type: str) -> str:
-    """Best-effort OCR.  Returns '' if no OCR engine is installed."""
-    if content_type == "application/pdf":
-        try:
-            from pypdf import PdfReader
-            reader = PdfReader(io.BytesIO(content))
-            return "\n".join(page.extract_text() or "" for page in reader.pages[:5])
-        except Exception as e:
-            logger.debug("PDF text extraction failed: %s", e)
-            return ""
-    try:
-        import cv2
-        import numpy as np
-        arr = np.frombuffer(content, dtype=np.uint8)
-        img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-        if img is None:
-            return ""
-        try:
-            import pytesseract  # required for OCR on images
-            return pytesseract.image_to_string(img) or ""
-        except ImportError:
-            return ""
-    except Exception as e:
-        logger.debug("Image OCR unavailable: %s", e)
-        return ""
+    """Best-effort OCR text (delegates to the shared OCR pipeline).
+
+    Kept as a thin wrapper so DocumentEngine stays readable; the
+    structured outcome (engine availability, failures) is available via
+    :func:`app.engines.ocr_pipeline.extract_text`.
+    """
+    from app.engines.ocr_pipeline import extract_text
+    return extract_text(content, content_type).text
 
 
 def _tampering_heuristics(img_bytes: bytes) -> Dict[str, float]:
