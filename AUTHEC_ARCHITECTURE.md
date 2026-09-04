@@ -49,10 +49,16 @@ AutheTec is a production-grade AI trust, fraud-prevention, identity-verification
 
 ### Engine Layer (`app/engines/`)
 - `document.py` — Document verification pipeline: file validation, OCR, field extraction, tamper signals, cross-field consistency, risk decision.
+- `identity_document.py` — Unified identity-document verification (passport / national ID / driver's licence): image-quality signals, OCR, MRZ validation, generic cross-checks, document-profile rules, fail-safe decision.
+- `mrz.py` — ICAO 9303 MRZ parser with full TD1 / TD2 / TD3 check-digit validation: per-field check digits, composite check-digit validation, filler `<` handling, tamper rejection (regression vectors from ICAO 9303 part 3).
+- `ocr_pipeline.py` — Shared OCR/extraction pipeline with deterministic image-quality signals (blur, glare, low resolution, compression artifacts) and explicit engine-status/confidence handling. Ships no real-world accuracy claim — see the synthetic benchmark harness.
+- `cross_checks.py` — Generic identity-document cross-checks: MRZ ↔ visual-zone consistency, date/document-number/nationality/name consistency, expiry checks, suspicious-alteration and replay detection. Country-specific rules stay in `document_profiles.py`, never mixed into generic checks.
+- `document_profiles.py` — Per-country document rules (field rules, expected formats). Botswana rules remain UNVALIDATED; no government rules are invented.
 - `signature.py` — Signature enrollment and verification with reference-based matching.
 - `payment.py` — Payment/transaction fraud scoring with feature extraction.
 - `risk.py` — Unified risk aggregation engine combining signals from all verification sources with configurable weights.
-- `face.py` — **Face verification engine** with strict separation of similarity / liveness / identity consistency; pluggable `FaceEmbedder` protocol; deterministic embedder for development; fail-safe REVIEW on undecodable images.
+- `face.py` — **Face verification engine** with strict separation of similarity / liveness / identity consistency; pluggable `FaceEmbedder`, `FaceDetector` and `FaceAligner` provider protocols; deterministic embedder for development; audit-only image-quality signals; fail-safe REVIEW on undecodable images. The deterministic embedder is **NOT** production biometric verification.
+- `liveness.py` — **Pluggable PAD abstraction**: `LivenessDetector` protocol (challenge + timeout-aware `check`), hard time budget where a hang/timeout/error is never reported as live, audit fields (`timed_out`, `audit_id`), and a deterministic development fallback explicitly labelled non-production in its output.
 - `social.py` — **Social trust engine**: deterministic, explainable rule-based scoring; protected attributes explicitly excluded; policy floors for high-stakes conditions.
 
 ### Service Layer (`app/services/`)
@@ -87,9 +93,26 @@ Supabase/PostgreSQL schema with Row Level Security:
 - JWT with algorithm allow-list, `jti` claim, expiry.
 - Per-tenant isolation enforced at service layer and database RLS.
 - Rate limiting (sliding-window, per-identity).
-- File upload validation: magic-byte sniffing, size limits, executable rejection.
+- File upload validation: magic-byte sniffing, size limits, executable rejection; **streaming 20 MB cap at the API boundary** (before the body is fully buffered).
+- Template/param validation on `X-Tenant-ID` (length + control-character rejection).
 - No raw biometric data stored or echoed in API responses.
 - Sensitive-data log redaction filter.
+
+## Capability Status
+
+Implemented, Validated and Production-ready are deliberately distinct. Nothing
+in this repository claims production readiness without independent validation:
+
+| Capability | Status |
+|---|---|
+| ICAO 9303 MRZ parsing & check digits (TD1/TD2/TD3, composite) | Implemented + validated against published ICAO vectors |
+| OCR pipeline (extraction + quality signals) | Implemented; accuracy **synthetic/test-only** (labelled) |
+| Document cross-checks (MRZ↔visual zone, dates, doc numbers, replay) | Implemented; generic rules only |
+| Botswana document rules | **UNVALIDATED** — no government rules fabricated |
+| Face similarity (deterministic embedder) | **Synthetic/test-only** — NOT production biometric verification |
+| Face provider interfaces (embedder/detector/aligner) | Implemented pluggable boundary; production model NOT bundled |
+| Liveness / PAD | Interface + fail-safe fallback implemented; bundled detector **NOT production PAD** |
+| Real-world accuracy figures | Not claimed anywhere without a measured validation dataset |
 
 ## Trust Engine Data Flow
 
