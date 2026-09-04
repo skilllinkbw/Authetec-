@@ -34,23 +34,53 @@ def _td3(docnum="L898902C3", nat="UTO", dob="740812", sex="F",
 
 
 def _td1(docnum="D23145890", issuer="D<<", nat="D<<", dob="740812",
-         sex="F", exp="120415", name="ERIKSSON<<ANNA<MARIA"):
-    """Build a TD1 (ID card) MRZ: 3 lines x 30 chars."""
+         sex="F", exp="120415", name="ERIKSSON<<ANNA<MARIA",
+         optional1="", optional2=""):
+    """Build a TD1 (ID card) MRZ: 3 lines x 30 chars.
+
+    Composite check digit (ICAO 9303 Part 5) covers: doc number + its
+    check, optional data 1, DOB + its check, expiry + its check,
+    optional data 2 — raw field values (fillers included).
+    """
     dnc, dbc, ec = (str(compute_check_digit(x)) for x in (docnum, dob, exp))
-    line1 = ("I<" + issuer.ljust(3, "<") + docnum + dnc).ljust(30, "<")
-    line2 = (dob + dbc + sex + exp + ec + nat.ljust(3, "<")).ljust(30, "<")
+    docnum_field = docnum[:9].ljust(9, "<")
+    opt1 = optional1.replace("<", "")[:15].ljust(15, "<")
+    opt2 = optional2.replace("<", "")[:11].ljust(11, "<")
+    composite = str(compute_check_digit(
+        docnum_field + dnc + opt1 + dob + dbc + exp + ec + opt2))
+    line1 = ("I<" + issuer.ljust(3, "<") + docnum_field + dnc + opt1)
+    line2 = dob + dbc + sex + exp + ec + nat.ljust(3, "<") + opt2 + composite
     line3 = name.ljust(30, "<")
     assert len(line1) == 30 and len(line2) == 30 and len(line3) == 30
     return [line1, line2, line3]
 
 
-def _td2(docnum="L898902C3", nat="UTO", dob="740812", sex="F", exp="120415"):
-    """Build a TD2 MRZ: 2 lines x 36 chars."""
-    line1 = ("P<UTO" + "ERIKSSON<<ANNA<MARIA").ljust(36, "<")
+def _td2(docnum="L898902C3", nat="UTO", dob="740812", sex="F", exp="120415",
+         optional=""):
+    """Build a TD2 MRZ: 2 lines x 36 chars.
+
+    Composite check digit (ICAO 9303 Part 5) covers: doc number + its
+    check, DOB + its check, expiry + its check, optional data — raw
+    field values (fillers included).
+    """
+    line1 = ("I<UTO" + "ERIKSSON<<ANNA<MARIA").ljust(36, "<")
     dnc, dbc, ec = (str(compute_check_digit(x)) for x in (docnum, dob, exp))
-    line2 = (docnum + dnc + nat.ljust(3, "<") + dob + dbc + sex + exp + ec).ljust(36, "<")
+    docnum_field = docnum[:9].ljust(9, "<")
+    opt = optional.replace("<", "")[:7].ljust(7, "<")
+    composite = str(compute_check_digit(
+        docnum_field + dnc + dob + dbc + exp + ec + opt))
+    line2 = docnum_field + dnc + nat.ljust(3, "<") + dob + dbc + sex + exp + ec + opt + composite
     assert len(line1) == 36 and len(line2) == 36
     return [line1, line2]
+
+
+# ICAO 9303 Part 5 published TD1 sample (hand-verified: doc-number check 7,
+# DOB check 2, expiry check 9, composite check 6).
+ICAO_TD1_PUBLISHED = [
+    "I<UTOD231458907<<<<<<<<<<<<<<<",
+    "7408122F1204159UTO<<<<<<<<<<<6",
+    "ERIKSSON<<ANNA<MARIA<<<<<<<<<<",
+]
 
 
 class TestCheckDigitAlgorithm:
@@ -211,6 +241,129 @@ class TestValidateTd2:
         r = validate_mrz(lines)
         assert r.check_digit_valid is False
         assert "document_number check digit failed" in r.issues
+
+
+class TestTd1CompositeCheckDigit:
+    """TD1 composite check digit (ICAO 9303 Part 5) — regression, tamper, malformed."""
+
+    def test_icao_published_vector_accepted(self):
+        r = validate_mrz(ICAO_TD1_PUBLISHED)
+        assert r.mrz_type == "TD1"
+        assert r.structure_valid is True
+        assert r.check_digit_valid is True
+        assert r.issues == []
+        assert r.is_valid is True
+        assert r.fields["document_number"] == "D23145890"
+        assert r.fields["final_check"] == "6"
+
+    def test_generated_composite_accepted(self):
+        r = validate_mrz(_td1())
+        assert r.check_digit_valid is True
+        assert "composite check digit failed" not in r.issues
+
+    def test_composite_with_optional_data_accepted(self):
+        lines = _td1(optional1="ABC123456", optional2="X9Y8Z7")
+        r = validate_mrz(lines)
+        assert r.check_digit_valid is True
+        assert r.fields["optional"] == "ABC123456"
+
+    def test_tampered_optional1_detected_by_composite(self):
+        # optional data 1 has NO individual check digit; only the composite
+        # covers it. Altering it must be caught by the composite check.
+        lines = _td1(optional1="ABCDEFGH")
+        lines[0] = lines[0][:20] + "X" + lines[0][21:]
+        r = validate_mrz(lines)
+        assert r.check_digit_valid is False
+        assert "composite check digit failed" in r.issues
+
+    def test_tampered_optional2_detected_by_composite(self):
+        # Note: mod-10 check digits (ICAO 9303) inherently miss alterations
+        # that shift the weighted sum by an exact multiple of 10 (~10% of
+        # random single-character substitutions).  '3'->'8' (weighted delta
+        # +5) IS detectable; '3'->'X' at a weight-1 position (delta +30)
+        # would not be — that is a property of the standard, not a defect.
+        lines = _td1(optional2="12345")
+        assert lines[1][20] == "3"
+        lines[1] = lines[1][:20] + "8" + lines[1][21:]
+        r = validate_mrz(lines)
+        assert r.check_digit_valid is False
+        assert "composite check digit failed" in r.issues
+
+    def test_wrong_composite_digit_rejected(self):
+        lines = _td1()
+        wrong = "0" if lines[1][29] != "0" else "1"
+        lines[1] = lines[1][:29] + wrong
+        r = validate_mrz(lines)
+        assert r.check_digit_valid is False
+        assert "composite check digit failed" in r.issues
+
+    def test_filler_composite_rejected(self):
+        # Malformed: composite check position holding a filler character.
+        lines = _td1()
+        lines[1] = lines[1][:29] + "<"
+        r = validate_mrz(lines)
+        assert r.check_digit_valid is False
+
+    def test_filler_padded_document_number(self):
+        # Doc numbers shorter than 9 chars are padded with fillers INSIDE
+        # the field; the check digit is computed over the RAW field
+        # (fillers occupy weighting positions).
+        lines = _td1(docnum="AB12345")
+        r = validate_mrz(lines)
+        assert r.check_digit_valid is True
+        assert r.fields["document_number"] == "AB12345"
+        # Tamper a filler inside the raw field -> detected.
+        lines[0] = lines[0][:12] + "X" + lines[0][13:]
+        r2 = validate_mrz(lines)
+        assert r2.check_digit_valid is False
+
+
+class TestTd2CompositeCheckDigit:
+    """TD2 composite check digit (ICAO 9303 Part 5) — regression, tamper, malformed."""
+
+    def test_generated_composite_accepted(self):
+        r = validate_mrz(_td2())
+        assert r.mrz_type == "TD2"
+        assert r.check_digit_valid is True
+        assert "composite check digit failed" not in r.issues
+        assert r.is_valid is True
+
+    def test_composite_with_optional_data_accepted(self):
+        r = validate_mrz(_td2(optional="ABC123"))
+        assert r.check_digit_valid is True
+        assert r.fields["optional"] == "ABC123"
+
+    def test_tampered_optional_data_detected_by_composite(self):
+        # TD2 optional data has no individual check digit; only the
+        # composite covers it.
+        lines = _td2(optional="ABC123")
+        lines[1] = lines[1][:30] + "X" + lines[1][31:]
+        r = validate_mrz(lines)
+        assert r.check_digit_valid is False
+        assert "composite check digit failed" in r.issues
+
+    def test_wrong_composite_digit_rejected(self):
+        lines = _td2()
+        wrong = "0" if lines[1][35] != "0" else "1"
+        lines[1] = lines[1][:35] + wrong
+        r = validate_mrz(lines)
+        assert r.check_digit_valid is False
+        assert "composite check digit failed" in r.issues
+
+    def test_filler_composite_rejected(self):
+        lines = _td2()
+        lines[1] = lines[1][:35] + "<"
+        r = validate_mrz(lines)
+        assert r.check_digit_valid is False
+
+    def test_tampered_expiry_date_detected(self):
+        # Expiry date is covered by BOTH its own check digit and the
+        # composite; either failure must be reported.
+        lines = _td2()
+        lines[1] = lines[1][:22] + "1" + lines[1][23:]
+        r = validate_mrz(lines)
+        assert r.check_digit_valid is False
+        assert "expiry_date check digit failed" in r.issues
 
 
 class TestStructuralFailures:
