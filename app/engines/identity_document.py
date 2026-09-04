@@ -18,6 +18,7 @@ from app.core.config import get_settings
 from app.engines.document import validate_document, DocumentValidationError
 from app.engines.mrz import validate_mrz, extract_mrz_from_text
 from app.engines.ocr_pipeline import assess_image_quality, extract_text
+from app.engines.cross_checks import run_cross_checks
 from app.engines.document_profiles import get_profile_or_default
 from app.models.risk import Decision, EngineResult, Signal
 from app.services.evidence import get_evidence_engine
@@ -25,6 +26,27 @@ from app.services.evidence import get_evidence_engine
 logger = logging.getLogger("authetec.identity_document")
 
 MODEL_VERSION = "identity-doc-1.1"
+
+# Replay detection: bounded in-process map of (tenant, sha256) -> first
+# seen timestamp.  Correct for single-worker deployments only; a
+# Redis-backed store is required for multi-worker/multi-node (tracked in
+# AUTHEC_PRODUCTION_HARDENING_REPORT).  No biometric/personal data is
+# stored here — only the content digest the engine already computes.
+_REPLAY_WINDOW_SECONDS = 3600.0
+_REPLAY_MAX_ENTRIES = 50_000
+_replay_cache: Dict[str, float] = {}
+
+
+def _check_replay(tenant_id: str, content_hash: str) -> bool:
+    """Return True if this exact document content was seen recently."""
+    import time as _time
+    key = f"{tenant_id}:{content_hash}"
+    now = _time.monotonic()
+    if len(_replay_cache) > _REPLAY_MAX_ENTRIES:
+        _replay_cache.clear()
+    seen = _replay_cache.get(key)
+    _replay_cache[key] = now
+    return seen is not None and (now - seen) < _REPLAY_WINDOW_SECONDS
 
 
 @dataclass
@@ -34,6 +56,9 @@ class IdentityDocumentInput:
     declared_content_type: str = ""
     document_type: str = "auto"
     country_code: str = ""
+    # Optional visual-zone data declared by the user; when provided it is
+    # cross-checked against the MRZ (generic checks only).
+    declared_fields: Optional[Dict[str, str]] = None
 
 
 def _detect_document_type(text: str, filename: str) -> str:
@@ -167,14 +192,37 @@ class IdentityDocumentEngine:
                                    "No MRZ found in OCR text", "identity_document"))
             score += 0.10
 
-        # 6) Document profile
+        # 6) MRZ <-> declared visual-zone consistency (generic checks)
+        if mrz_result and mrz_result.is_valid and doc.declared_fields:
+            inconsistencies = run_cross_checks(doc.declared_fields,
+                                               mrz_result.fields)
+            for inc in inconsistencies:
+                score += 0.25
+                reasons.append(f"Field inconsistency ({inc.field}): {inc.reason}")
+                signals.append(Signal(
+                    f"cross_check_{inc.field}", 0.9, 0.25,
+                    inc.reason, "identity_document"))
+            if not inconsistencies:
+                signals.append(Signal("cross_checks_passed", 0.0, 0.05,
+                                      "Declared fields consistent with MRZ",
+                                      "identity_document"))
+
+        # 7) Replay / duplicate-submission detection (content digest only)
+        if _check_replay(tid, content_hash):
+            score += 0.20
+            reasons.append("Identical document content submitted repeatedly "
+                           "(possible replay)")
+            signals.append(Signal("document_replay", 0.8, 0.20,
+                                  content_hash, "identity_document"))
+
+        # 8) Document profile
         country = doc.country_code or "XX"
         if country == "XX" and mrz_result and mrz_result.fields:
             issuer = mrz_result.fields.get("issuer", "")
             if issuer:
                 country = issuer
         profile = get_profile_or_default(detected_type, country)
-        # 7) Expiry check from MRZ
+        # 9) Expiry check from MRZ
         if mrz_result and mrz_result.fields:
             expiry = mrz_result.fields.get("expiry_date", "")
             if expiry and len(expiry) == 6 and expiry.isdigit():
@@ -196,14 +244,14 @@ class IdentityDocumentEngine:
                     signals.append(Signal("expiry_parse_error", 0.3, 0.05,
                                            f"Could not parse expiry: {expiry}", "identity_document"))
 
-        # 8) Profile validation warning
+        # 9) Profile validation warning
         if not profile.validated:
             reasons.append(f"Document profile UNVALIDATED for {detected_type}:{country}")
             signals.append(Signal("profile_unvalidated", 0.5, 0.15,
                                    "Profile rules are unvalidated", "identity_document"))
             score += 0.10
 
-        # 9) Decision
+        # 10) Decision
         score = min(score, 1.0)
         confidence = 0.6 if (mrz_result and mrz_result.is_valid) else 0.35
         decision = Decision.CLEAR if score < self._settings.risk_clear_threshold else (
@@ -212,7 +260,7 @@ class IdentityDocumentEngine:
         if not reasons:
             reasons.append("No identity document anomalies detected")
 
-        # 10) Store evidence
+        # 11) Store evidence
         evidence = self._evidence.store(
             tenant_id=tid,
             storage_uri=f"objects/{tid}/identity/{content_hash}",
