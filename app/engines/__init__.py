@@ -16,3 +16,32 @@ from .social import (  # noqa: F401
     SocialProfileInput,
     EXCLUDED_ATTRIBUTES,
 )
+from .mrz import (  # noqa: F401
+    validate_mrz,
+    detect_mrz_type,
+    extract_mrz_from_text,
+    MrzValidationResult,
+    compute_check_digit,
+    validate_check_digit,
+)
+from .document_profiles import (  # noqa: F401
+    DocumentProfile,
+    FieldRule,
+    register_profile,
+    get_profile,
+    get_profile_or_default,
+    list_profiles,
+)
+from .identity_document import (  # noqa: F401
+    IdentityDocumentEngine,
+    IdentityDocumentInput,
+)
+from .liveness import (  # noqa: F401
+    DeterministicLivenessDetector,
+    LivenessDetector,
+    LivenessResult,
+    PresentationAttack,
+    PadMethod,
+    get_liveness_detector,
+    set_liveness_detector,
+)

@@ -10,6 +10,7 @@ from app.common.deps import TenantContext, get_tenant_context
 from app.common.errors import BadRequestError
 from app.core.config import get_settings
 from app.engines.document import DocumentEngine, DocumentInput
+from app.engines.identity_document import IdentityDocumentEngine, IdentityDocumentInput
 from app.engines.signature import SignatureEngine, SignatureSample, _b64_decode
 from app.models.risk import Decision, Severity
 from app.schemas import (
@@ -180,6 +181,59 @@ def verify_face(
                 message="; ".join(result.reasons[:2]),
                 metadata={"similarity": result.extra.get("similarity")},
             )
-        except Exception as e:  # alerting must never break verification
-            logger.debug("face alert skipped: %s", e)
+        except Exception:
+            pass  # alert creation must not break the response
+    return _result_out(result)
+
+
+@router.post(
+    "/verification/identity",
+    response_model=EngineResultOut,
+    summary="Verify an identity document (passport, national ID, driver's licence)",
+    description=(
+        "Unified identity document verification with document profiles, "
+        "MRZ validation, and explainable risk decisions."
+    ),
+)
+async def verify_identity_document(
+    file: UploadFile = File(...),
+    document_type: str = "",
+    country_code: str = "",
+    tenant: TenantContext = Depends(get_tenant_context),
+) -> EngineResultOut:
+    content = await file.read()
+    declared = file.content_type or ""
+    try:
+        engine = IdentityDocumentEngine(tenant_id=tenant.tenant_id)
+        result = engine.verify(
+            IdentityDocumentInput(
+                filename=file.filename or "upload",
+                content=content,
+                declared_content_type=declared,
+                document_type=document_type,
+                country_code=country_code,
+            ),
+            tenant_id=tenant.tenant_id,
+        )
+    except ValueError as e:
+        raise BadRequestError(str(e)) from e
+
+    if result.decision == Decision.BLOCK:
+        try:
+            from app.services.alerts import get_alert_engine
+            get_alert_engine().create(
+                tenant_id=tenant.tenant_id,
+                alert_type="identity_document_fraud",
+                severity=Severity.HIGH,
+                risk_score=result.risk_score,
+                source="identity_document",
+                evidence_ids=[],
+                message="; ".join(result.reasons[:2]),
+                metadata={
+                    "document_type": document_type,
+                    "country_code": country_code,
+                },
+            )
+        except Exception as e:
+            logger.debug("identity document alert skipped: %s", e)
     return _result_out(result)
