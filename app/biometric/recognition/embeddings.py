@@ -80,14 +80,21 @@ class EmbeddingValidator:
         return EmbeddingValidation(True, "ok", dim=int(embedding.shape[0]), norm=norm)
 
     def normalize(self, embedding: np.ndarray) -> Optional[np.ndarray]:
-        """Return an L2-normalised float32 copy, or None if invalid."""
-        v = self.validate(embedding)
+        """Return an L2-normalised float32 copy, or None if invalid.
+
+        Normalisation is the purpose of this method, so the unit-norm
+        requirement is deliberately NOT enforced on the input; only
+        structural validity (dtype, shape, dimension, finite values) is.
+        """
+        relaxed = EmbeddingValidator(
+            expected_dim=self._expected_dim, require_unit_norm=False)
+        v = relaxed.validate(embedding)
         if not v.is_valid:
             return None
-        arr = np.asarray(embedding, dtype=np.float32)
+        arr = np.asarray(embedding, dtype=np.float32).ravel()
         n = float(np.linalg.norm(arr))
         if n < 1e-12:
-            return None
+            return None  # zero vector cannot be normalised
         return (arr / n).astype(np.float32)
 
 

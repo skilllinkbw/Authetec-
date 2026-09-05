@@ -53,10 +53,15 @@ class FaceDetectorBase:
 
 def decode_image(image_bytes: bytes, color: bool = True):
     """Decode raw bytes to a BGR or grayscale image, or None."""
+    if not image_bytes:
+        return None  # cv2.imdecode raises on empty buffers (OpenCV 5)
     import cv2
     arr = np.frombuffer(image_bytes, dtype=np.uint8)
     flag = cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE
-    return cv2.imdecode(arr, flag)
+    try:
+        return cv2.imdecode(arr, flag)
+    except cv2.error:
+        return None
 
 
 def encode_crop(img) -> Optional[bytes]:

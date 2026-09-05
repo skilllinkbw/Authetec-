@@ -126,6 +126,7 @@ def bootstrap_pad_provider() -> str:
     """
     import os
 
+    from app.biometric.pad.engine import get_pad_engine
     from app.engines.liveness import set_liveness_detector
 
     provider = os.getenv(PAD_PROVIDER_ENV, "deterministic").strip().lower()

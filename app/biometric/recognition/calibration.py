@@ -52,19 +52,31 @@ class CalibrationResult:
 
 
 def compute_eer(genuine: np.ndarray, impostor: np.ndarray) -> float:
-    """Equal Error Rate from genuine/impostor score arrays."""
+    """Equal Error Rate from genuine/impostor score arrays.
+
+    The EER is the common error-rate value at the threshold where the
+    FMR and FNMR curves cross (i.e. the rate itself, NOT the size of
+    the gap between them).
+    """
     gen = np.asarray(genuine, dtype=np.float64).ravel()
     imp = np.asarray(impostor, dtype=np.float64).ravel()
     if gen.size == 0 or imp.size == 0:
         raise ValueError("need at least one genuine and one impostor score")
     thresholds = np.unique(np.concatenate([gen, imp]))
-    thresholds = np.sort(thresholds)
-    best = 1.0
-    for t in thresholds:
+    # Midpoints between consecutive score values give finer resolution
+    # than the raw scores alone; include the extremes.
+    mids = (thresholds[:-1] + thresholds[1:]) / 2.0
+    sweep = np.concatenate([[thresholds[0] - 1.0], mids, [thresholds[-1] + 1.0]])
+    best_gap = float("inf")
+    best_rate = 1.0
+    for t in sweep:
         fnmr = float((gen < t).mean())
         fmr = float((imp >= t).mean())
-        best = min(best, abs(fmr - fnmr))
-    return float(best)
+        gap = abs(fmr - fnmr)
+        if gap < best_gap:
+            best_gap = gap
+            best_rate = (fmr + fnmr) / 2.0
+    return float(best_rate)
 
 
 def calibrate_thresholds(

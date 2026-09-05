@@ -47,6 +47,11 @@ chromadb>=0.4.0
 opencv-python-headless>=4.8.0
 mediapipe>=0.10.0
 
+# --- Native biometric inference (AUTHeTEC face stack) ---
+# Optional at runtime: the deterministic NON_PRODUCTION_FALLBACK works
+# without it.  Required for the "native" face/PAD providers.
+onnxruntime>=1.16.0
+
 # --- HTTP Client ---
 httpx>=0.27.0
 requests>=2.31.0

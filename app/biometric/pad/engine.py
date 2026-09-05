@@ -27,6 +27,7 @@ an attack" from "cannot decide" without weakening the fail-safe default.
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum
@@ -141,7 +142,12 @@ class MultiLayerPadEngine:
         frame_timestamps_s: Optional[Sequence[float]] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> PadResult:
-        """Run PAD under a hard time budget (fail-safe on timeout)."""
+        """Run PAD under a hard time budget (fail-safe on timeout).
+
+        Uses a daemon worker thread so a stuck worker can never block
+        the caller past the budget, nor keep the process alive after
+        the caller returns (phase-1 timeout rule).
+        """
         t0 = time.perf_counter()
         limit = self.DEFAULT_TIMEOUT_S if timeout_s is None else float(timeout_s)
         if limit <= 0 or not isinstance(image_bytes, (bytes, bytearray)):
@@ -158,25 +164,31 @@ class MultiLayerPadEngine:
             challenge=challenge,
         )
 
-        from concurrent.futures import ThreadPoolExecutor
-        pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="authetec-pad")
-        try:
-            future = pool.submit(self._do_check, inputs)
-            done, _ = wait_all([future], limit)
-            if not done:
-                # Worker released without waiting on exit: a stuck worker
-                # can never block the caller past the budget (phase-1 rule).
-                pool.shutdown(wait=False)
-                return self._timeout_result(t0, limit)
-            result = future.result()
-            pool.shutdown(wait=False)
-            return result
-        except Exception as e:  # includes worker exceptions
-            logger.debug("PAD worker raised: %s", e)
-            pool.shutdown(wait=False)
+        result_holder: list = []
+        exc_holder: list = []
+
+        def _worker() -> None:
+            try:
+                result_holder.append(self._do_check(inputs))
+            except Exception as e:  # worker exception -> fail-safe
+                exc_holder.append(e)
+
+        th = threading.Thread(target=_worker, daemon=True,
+                              name="authetec-pad-worker")
+        th.start()
+        th.join(timeout=limit)
+        if th.is_alive():
+            # Worker still running after budget: fail-safe NOT_LIVE.
+            # Daemon thread will be killed when the process exits; it
+            # can never block the caller past the budget.
+            return self._timeout_result(t0, limit)
+        if exc_holder:
             return self._fail(
                 t0, PadDecision.NOT_LIVE,
-                f"pad worker exception: {type(e).__name__}")
+                f"pad worker exception: {type(exc_holder[0]).__name__}")
+        if result_holder:
+            return result_holder[0]
+        return self._fail(t0, PadDecision.NOT_LIVE, "pad worker produced no result")
 
     # ── layer orchestration ───────────────────────────────────────────
     def _do_check(self, inp: _LayerInputs) -> PadResult:
@@ -313,12 +325,6 @@ class MultiLayerPadEngine:
             timed_out=False, decision=PadDecision.INCONCLUSIVE,
             layers=layers, quality_issues=list(quality_issues),
         )
-
-
-def wait_all(futures, timeout_s: float):
-    """concurrent.futures.wait wrapper (kept tiny for testability)."""
-    from concurrent.futures import wait
-    return wait(futures, timeout=timeout_s)
 
 
 _engine: Optional[MultiLayerPadEngine] = None

@@ -1,7 +1,7 @@
 # AutheTec — Architecture
 
-**Date:** 2026-09-03
-**Branch:** `authetec-foundation-review`
+**Date:** 2026-09-04
+**Branch:** `authetec-native-biometric-engine`
 
 ## Overview
 
@@ -20,9 +20,89 @@ AutheTec is a production-grade AI trust, fraud-prevention, identity-verification
       model_registry, ai_security) payment, face, social,
                                       risk/unified)
                           |
-                   Infrastructure
-                  (supabase, vector_store)
+                   ┌──────┴──────┐
+                   |             |
+            Biometric Stack    Infrastructure
+     (detection, alignment,   (supabase, vector_store)
+      recognition, pad)
 ```
+
+## Native Biometric Stack (`app/biometric/`)
+
+Phase 2 introduces AUTHeTEC's **own** biometric technology — no dependency on
+AWS Rekognition, FaceTec, Azure Face, Google Cloud Vision, or any other
+proprietary hosted provider for core face-recognition or PAD.
+
+The stack is provider-independent: every capability sits behind an interface
+(`FaceDetector`, `FaceAligner`, `FaceEmbedder`, `LivenessDetector`) and the
+production implementation is selected by configuration, never hard-coded.
+
+```
+app/biometric/
+├── contracts.py           # shared dataclasses (FaceMatch, QualityVerdict, …)
+├── __init__.py            # native engine provider accessors
+├── integration.py         # fraud-engine wiring + provider bootstrap
+├── detection/
+│   ├── base.py            # FaceDetector interface
+│   └── yunet.py           # YuNet ONNX face detector
+├── alignment/
+│   └── landmarks.py       # LandmarkAligner
+├── quality/
+│   └── gate.py            # FaceQualityGate (blur / brightness / size / saturation)
+├── recognition/
+│   ├── __init__.py        # native embedder + matcher providers
+│   ├── embeddings.py      # embedding contract + build_embedder()
+│   ├── sface.py           # SFace ONNX embedder
+│   ├── deterministic_embedder.py  # NON_PRODUCTION_FALLBACK
+│   ├── matcher.py         # cosine-similarity matcher + threshold calibration
+│   └── calibration.py     # FMR/FNMR/EER calibration harness
+├── pad/
+│   ├── __init__.py        # multi-layer PAD provider
+│   ├── engine.py          # MultiLayerPadEngine (safe decision model)
+│   ├── passive.py         # texture / spectral / moire / compression signals
+│   ├── replay.py          # frame-sequence duplication + timestamp analysis
+│   ├── injection.py       # camera-source integrity
+│   └── active.py          # randomized challenge-response
+├── models/
+│   ├── __init__.py        # model manifest accessor
+│   └── manifest.py        # version-pinned model metadata + integrity info
+└── security/
+    ├── __init__.py        # integrity verification
+    └── integrity.py       # SHA-256 model-integrity checking
+```
+
+### Provider injection
+
+Two environment variables select the production providers at startup
+(`app/biometric/integration.py`):
+
+| Variable | Values | Default |
+|---|---|---|
+| `AUTHETEC_FACE_PROVIDER` | `deterministic` \| `native` | `deterministic` |
+| `AUTHETEC_PAD_PROVIDER` | `deterministic` \| `native` | `deterministic` |
+
+`native` activates the AUTHeTEC stack (YuNet + SFace + multi-layer PAD). If
+the required models are missing, the bootstrap **fails safe** to the
+deterministic `NON_PRODUCTION_FALLBACK` and logs a clear warning — it never
+starts a half-configured pipeline.
+
+### Model download policy
+
+- Models are **never** downloaded at application startup or runtime.
+- An operator runs `python -m scripts.install_biometric_models` explicitly.
+- Every download is verified (size + SHA-256) before acceptance.
+- The deterministic fallback works without any models installed.
+
+### Third-party components
+
+| Component | Project | Model | License | Commercial | Status |
+|---|---|---|---|---|---|
+| Face detection | YuNet (OpenCV Zoo) | `face_detection_yunet_2023mar.onnx` | MIT | Yes | PRODUCTION_ALLOWED |
+| Face embedding | SFace (OpenCV Zoo) | `face_recognition_sface_2021dec.onnx` | MIT | Yes | PRODUCTION_ALLOWED |
+| PAD engine | AUTHeTEC native | heuristic signals (no learned weights) | Proprietary | Yes | PRODUCTION_ALLOWED (synthetic) |
+
+See `BIOMETRIC_COMPONENTS.md` and `BIOMETRIC_LICENSE_MANIFEST.json` for
+machine-readable provenance.
 
 ## Backend (`app/`)
 

@@ -204,23 +204,6 @@ def cosine_similarity(a: Optional[np.ndarray], b: Optional[np.ndarray]) -> Optio
     return float(np.dot(a, b) / (na * nb))
 
 
-_face_engine: Optional["FaceVerificationEngine"] = None
-
-
-def get_face_engine() -> "FaceVerificationEngine":
-    """Process-wide face verification engine singleton (fail-safe default)."""
-    global _face_engine
-    if _face_engine is None:
-        _face_engine = FaceVerificationEngine()
-    return _face_engine
-
-
-def set_face_engine(engine: "FaceVerificationEngine") -> None:
-    """Override the global face engine (production provider injection)."""
-    global _face_engine
-    _face_engine = engine
-
-
 class FaceVerificationEngine:
     """Verifies a candidate face against a reference face.
 

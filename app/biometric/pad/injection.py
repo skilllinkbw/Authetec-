@@ -123,14 +123,18 @@ def injection_attack_indicators(s: InjectionSignals) -> List[Tuple[str, float]]:
 
     Confidence values are heuristic risk weights (see module note) —
     NOT calibrated probabilities.
+
+    Note: ``capture_metadata_missing`` is deliberately NOT included as a
+    standalone attack indicator.  Absence of capture metadata is common
+    with legitimate camera pipelines that simply don't forward it; it is
+    recorded in ``InjectionSignals`` for audit purposes but is not
+    evidence of an attack on its own.
     """
     out: List[Tuple[str, float]] = []
     if not s.assessed:
         return out
     if s.virtual_camera_label:
         out.append(("injection.virtual_camera_device", 0.90))
-    if s.capture_metadata_missing:
-        out.append(("injection.capture_metadata_missing", 0.25))
     for anomaly in s.metadata_anomalies:
         out.append((f"injection.{anomaly}", 0.50))
     if s.screen_resolution_match:
