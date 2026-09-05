@@ -1,0 +1,78 @@
+{
+  "model": "Ensemble Fraud Detection",
+  "version": "benchmark@cdd20d95",
+  "dataset": "Synthetic Transaction Data (ensemble schema replica)",
+  "dataset_version": "synthetic-v1",
+  "features": [
+    "V01",
+    "V02",
+    "V03",
+    "V04",
+    "V05",
+    "V06",
+    "V07",
+    "V08",
+    "V09",
+    "V10",
+    "V11",
+    "V12",
+    "V13",
+    "V14",
+    "V15",
+    "V16",
+    "V17",
+    "V18",
+    "V19",
+    "V20",
+    "V21",
+    "V22",
+    "V23",
+    "V24",
+    "V25",
+    "V26",
+    "V27",
+    "V28",
+    "V29",
+    "V30",
+    "Amount",
+    "Time"
+  ],
+  "splits": {
+    "train": "80% stratified",
+    "validation": "Built-in holdout",
+    "test": "20% stratified"
+  },
+  "metrics": {
+    "pr_auc": 0.9444444444444444,
+    "roc_auc": 0.9967532467532468,
+    "precision": 0.6,
+    "recall": 1.0,
+    "f1": 0.75,
+    "false_positive_rate": 0.025,
+    "false_negative_rate": 0.0
+  },
+  "threshold": 0.5,
+  "latency_ms": 0.09193875011987984,
+  "leakage_notes": "Synthetic data with explicit train/test split.",
+  "reproducibility": {
+    "random_state": 42,
+    "git_commit": "cdd20d957ff616f50e95e029dd5c274714c5754d",
+    "license": "MIT",
+    "train_info": {
+      "model": "Ensemble",
+      "n_train": 640,
+      "n_test": 160,
+      "estimators": [
+        "rf",
+        "lr"
+      ]
+    }
+  },
+  "limitations": [
+    "Metrics on synthetic data",
+    "Reported repo metrics not Authetec-validated",
+    "Does not reproduce real-time streaming architecture"
+  ],
+  "generated_at": "2026-08-30T20:15:59.445076",
+  "model_id": "ensemble_fraud_cdd20d95"
+}

@@ -1,0 +1,1 @@
+"""Authetec core package: configuration and security primitives."""

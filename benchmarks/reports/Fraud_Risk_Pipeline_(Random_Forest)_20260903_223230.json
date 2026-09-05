@@ -1,0 +1,64 @@
+{
+  "model": "Fraud Risk Pipeline (Random Forest)",
+  "version": "benchmark@781280ed",
+  "dataset": "Synthetic AIML-Dataset replica",
+  "dataset_version": "synthetic-v1",
+  "features": [
+    "step",
+    "amount_to_oldbalanceOrg",
+    "origin_zero_after_txn",
+    "origin_drained_flag",
+    "log_amount",
+    "hour_of_day",
+    "day_index",
+    "is_weekend_proxy",
+    "type_CASH_IN",
+    "type_CASH_IN_x_amount",
+    "type_CASH_OUT",
+    "type_CASH_OUT_x_amount",
+    "type_DEBIT",
+    "type_DEBIT_x_amount",
+    "type_PAYMENT",
+    "type_PAYMENT_x_amount",
+    "type_TRANSFER",
+    "type_TRANSFER_x_amount",
+    "high_amount_flag",
+    "origin_recon_mismatch_flag",
+    "dest_recon_mismatch_flag",
+    "strong_suspicion_flag"
+  ],
+  "splits": {
+    "train": "80% stratified (leakage-controlled)",
+    "validation": "N/A",
+    "test": "20% stratified"
+  },
+  "metrics": {
+    "pr_auc": 0.3125,
+    "roc_auc": 0.9874581939799332,
+    "precision": 0.5,
+    "recall": 0.5,
+    "f1": 0.5,
+    "false_positive_rate": 0.0016666666666666668,
+    "false_negative_rate": 0.0016666666666666668
+  },
+  "threshold": 0.5,
+  "latency_ms": 0.06052916665794328,
+  "leakage_notes": "Excluded isFlaggedFraud, nameOrig/nameDest, oldBalanceOrg. class_weight='balanced' (no SMOTE).",
+  "reproducibility": {
+    "random_state": 42,
+    "git_commit": "781280ed784f07ea781d48f4b6f04fc9bd4a0d69",
+    "license": "NOT FOUND (no license file in repo)",
+    "train_info": {
+      "model": "RandomForest",
+      "n_train": 2400,
+      "n_test": 600,
+      "fraud_rate_test": 0.0033333333333333335
+    }
+  },
+  "limitations": [
+    "Metrics on synthetic data",
+    "Original 6.3M-row metrics not reproduced"
+  ],
+  "generated_at": "2026-09-03T22:32:30.259310",
+  "model_id": "fraud_risk_pipeline_781280ed"
+}

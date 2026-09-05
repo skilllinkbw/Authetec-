@@ -1,0 +1,5 @@
+# Model binaries are never committed to the repository.
+*
+!.gitignore
+!model_pins.json
+!model_pins.json

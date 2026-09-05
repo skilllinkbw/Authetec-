@@ -1,0 +1,67 @@
+{
+  "model": "Graph Fraud Detection (GraphSAGE Surrogate)",
+  "version": "benchmark@823c0c44",
+  "dataset": "Synthetic Transaction Graph (Cifer-AF schema replica)",
+  "dataset_version": "synthetic-v1",
+  "features": [
+    "feat_00",
+    "feat_01",
+    "feat_02",
+    "feat_03",
+    "feat_04",
+    "feat_05",
+    "feat_06",
+    "feat_07",
+    "feat_08",
+    "feat_09",
+    "feat_10",
+    "feat_11",
+    "agg_feat_00",
+    "agg_feat_01",
+    "agg_feat_02",
+    "agg_feat_03",
+    "agg_feat_04",
+    "agg_feat_05",
+    "agg_feat_06",
+    "agg_feat_07",
+    "agg_feat_08",
+    "agg_feat_09",
+    "agg_feat_10",
+    "agg_feat_11"
+  ],
+  "splits": {
+    "train": "80% stratified",
+    "validation": "N/A",
+    "test": "20% stratified"
+  },
+  "metrics": {
+    "pr_auc": 1.0,
+    "roc_auc": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "false_positive_rate": 0.0,
+    "false_negative_rate": 0.0,
+    "accuracy": 1.0
+  },
+  "threshold": 0.5,
+  "latency_ms": 0.0032145000295713544,
+  "leakage_notes": "Graph aggregation uses only local neighborhood. Original uses NeighborLoader for mini-batch sampling.",
+  "reproducibility": {
+    "random_state": 42,
+    "git_commit": "823c0c448880728c9cbdc618b3a93c1a539ded73",
+    "license": "MIT",
+    "train_info": {
+      "model": "GraphSAGE-Surrogate",
+      "n_train": 800,
+      "n_test": 200
+    }
+  },
+  "limitations": [
+    "GraphSAGE replaced with sklearn surrogate",
+    "Metrics on synthetic graph data",
+    "Original low precision (0.1179) due to 0.1% fraud rate"
+  ],
+  "generated_at": "2026-08-30T20:17:36.515405",
+  "model_id": "graph_fraud_823c0c44"
+}

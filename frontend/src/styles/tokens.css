@@ -1,0 +1,40 @@
+/*
+  Authetec design tokens — enterprise trust platform visual system.
+  Brand: Braincade Holdings Pty Ltd · "Verify. Protect. Trust."
+*/
+:root {
+  /* Brand palette */
+  --c-primary: #0f172a;
+  --c-primary-soft: #1e293b;
+  --c-secondary: #2563eb;
+  --c-secondary-soft: #dbeafe;
+  --c-success: #22c55e;
+  --c-success-soft: #dcfce7;
+  --c-warning: #f59e0b;
+  --c-warning-soft: #fef3c7;
+  --c-danger: #ef4444;
+  --c-danger-soft: #fee2e2;
+  --c-bg: #f8fafc;
+  --c-surface: #ffffff;
+  --c-border: #e2e8f0;
+  --c-text: #0f172a;
+  --c-text-muted: #64748b;
+
+  /* Typography */
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-heading: "Poppins", "Inter", "Segoe UI", system-ui, sans-serif;
+
+  /* Layout */
+  --sidebar-w: 248px;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 4px 12px rgba(15, 23, 42, 0.10);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
