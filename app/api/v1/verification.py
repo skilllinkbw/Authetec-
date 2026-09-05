@@ -15,7 +15,7 @@ from app.engines.signature import SignatureEngine, SignatureSample, _b64_decode
 from app.models.risk import Decision, Severity
 from app.schemas import (
     EngineResultOut, SignatureEnrollIn, SignatureOut, SignatureVerifyIn,
-    FaceVerifyIn,
+    FaceVerifyIn, LivenessResultOut, LivenessVerifyIn,
 )
 
 logger = logging.getLogger("authetec.api.verification")
@@ -170,7 +170,7 @@ def verify_face(
     tenant: TenantContext = Depends(get_tenant_context),
 ) -> EngineResultOut:
     from app.engines.face import (
-        FaceMatchInput, FaceVerificationEngine, LivenessCheck, _b64_decode,
+        FaceMatchInput, get_face_engine, LivenessCheck, _b64_decode,
     )
 
     # Strict base64 validation up front: malformed payloads are a client
@@ -182,7 +182,10 @@ def verify_face(
     except ValueError as e:
         raise BadRequestError(str(e)) from e
 
-    engine = FaceVerificationEngine()
+    # Provider-independent: the engine behind this endpoint is selected by
+    # configuration (AUTHETEC_FACE_PROVIDER); default stays the phase-1
+    # deterministic NON_PRODUCTION_FALLBACK.
+    engine = get_face_engine()
     match = FaceMatchInput(
         reference_image_b64=payload.reference_image_b64,
         candidate_image_b64=payload.candidate_image_b64,
@@ -210,6 +213,72 @@ def verify_face(
         except Exception:
             pass  # alert creation must not break the response
     return _result_out(result)
+
+
+@router.post(
+    "/verification/liveness",
+    response_model=LivenessResultOut,
+    summary="Run native multi-layer presentation-attack detection (PAD)",
+    description=(
+        "Evaluates a capture with the AUTHeTEC native PAD engine: passive "
+        "texture/spectral signals, frame-sequence replay detection and "
+        "camera-source injection checks. Returns a tri-state decision "
+        "(LIVE / NOT_LIVE / INCONCLUSIVE); INCONCLUSIVE and NOT_LIVE are "
+        "never reported as live. Biometric content is never echoed back."
+    ),
+)
+def verify_liveness(
+    payload: LivenessVerifyIn,
+    tenant: TenantContext = Depends(get_tenant_context),
+) -> LivenessResultOut:
+    from app.biometric.integration import pad_result_to_engine_result
+    from app.biometric.pad import get_pad_engine
+
+    def _frame_bytes(b64: str) -> bytes:
+        try:
+            return _b64_decode(b64)
+        except ValueError as e:
+            raise BadRequestError(str(e)) from e
+
+    image = _frame_bytes(payload.image_b64)
+    frames = [
+        (_frame_bytes(f.image_b64), f.timestamp_s) for f in payload.frames
+    ]
+    frame_payloads = [f for f, _ in frames]
+    frame_ts = [t for _, t in frames if t is not None]
+    if frame_ts and len(frame_ts) != len(frame_payloads):
+        raise BadRequestError(
+            "frame timestamps must be provided for every frame or none")
+
+    # Native PAD under a hard time budget; all failure modes fail safe
+    # (timeout/exception/malformed -> NOT_LIVE, never LIVE).
+    pad = get_pad_engine().check(
+        image,
+        timeout_s=payload.timeout_s,
+        frames=frame_payloads,
+        frame_timestamps_s=frame_ts or None,
+        metadata=payload.metadata or None,
+    )
+    risk_signal = pad_result_to_engine_result(
+        pad, tenant_id=tenant.tenant_id)
+    return LivenessResultOut(
+        decision=pad.decision.value,
+        is_live=pad.is_live,
+        confidence=pad.confidence,
+        timed_out=pad.timed_out,
+        attacks=[
+            {"indicator": a.indicator, "confidence": a.confidence,
+             "method": a.method}
+            for a in pad.attacks
+        ],
+        signals=list(pad.signals)[:10],
+        notes=pad.notes,
+        model_version=pad.model_version,
+        processing_time_ms=pad.processing_time_ms,
+        provider=pad.provider,
+        quality_issues=list(pad.quality_issues),
+        risk_signal=_result_out(risk_signal),
+    )
 
 
 @router.post(

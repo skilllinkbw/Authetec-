@@ -177,11 +177,11 @@ def bootstrap_face_provider() -> str:
             "deterministic fallback (NON_PRODUCTION_FALLBACK)")
         return "deterministic"
     embedder = build_embedder()
-    if not embedder.available():
+    if embedder is None or not getattr(embedder, "available", lambda: True)():
         logger.warning(
-            "native face provider requested but SFace model is missing - "
-            "install models per docs/biometric_model_setup.md; using "
-            "deterministic fallback (NON_PRODUCTION_FALLBACK)")
+            "native face provider requested but no embedding backend is "
+            "available - install models per docs/biometric_model_setup.md; "
+            "using deterministic fallback (NON_PRODUCTION_FALLBACK)")
         return "deterministic"
 
     engine = FaceVerificationEngine(

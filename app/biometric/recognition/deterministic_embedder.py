@@ -39,6 +39,13 @@ class DeterministicFaceEmbedder:
     def model_version(self) -> str:
         return "deterministic-content-projector-v1"
 
+    def available(self) -> bool:
+        """Always available (pure NumPy); NOT production-grade."""
+        return True
+
+    def install_instructions(self) -> str:
+        return "No install needed - NON_PRODUCTION_FALLBACK backend."
+
     def __init__(self) -> None:
         rng = np.random.default_rng(42)
         self._projection = rng.standard_normal(

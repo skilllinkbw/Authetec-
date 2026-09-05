@@ -455,3 +455,21 @@ class FaceVerificationEngine:
         if identity is None:
             conf -= 0.10  # identity cross-check missing
         return max(0.10, min(0.99, conf))
+
+
+# ── engine singleton (provider-independent injection point) ───────────
+_face_engine: Optional[FaceVerificationEngine] = None
+
+
+def get_face_engine() -> FaceVerificationEngine:
+    """Get the global face-verification engine (deterministic fallback)."""
+    global _face_engine
+    if _face_engine is None:
+        _face_engine = FaceVerificationEngine()
+    return _face_engine
+
+
+def set_face_engine(engine: FaceVerificationEngine) -> None:
+    """Override the global face engine (for production provider injection)."""
+    global _face_engine
+    _face_engine = engine

@@ -4,6 +4,7 @@ from .payment import TransactionIn, PaymentScoreOut
 from .verification import (
     SignatureEnrollIn, SignatureVerifyIn, SignatureOut,
     LivenessCheckIn, FaceVerifyIn,
+    LivenessFrameIn, LivenessVerifyIn, PadAttackOut, LivenessResultOut,
 )
 from .alerts import (
     AlertOut, AlertActionOut, AlertListOut,
@@ -20,6 +21,7 @@ __all__ = [
     "TransactionIn", "PaymentScoreOut",
     "SignatureEnrollIn", "SignatureVerifyIn", "SignatureOut",
     "LivenessCheckIn", "FaceVerifyIn",
+    "LivenessFrameIn", "LivenessVerifyIn", "PadAttackOut", "LivenessResultOut",
     "AlertOut", "AlertActionOut", "AlertListOut",
     "AlertAssignIn", "AlertNoteIn", "AlertNoteOut",
     "ComponentHealth", "HealthOut",

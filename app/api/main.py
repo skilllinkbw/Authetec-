@@ -30,9 +30,13 @@ async def lifespan(app: FastAPI):
     settings.require_secret("AUTHETEC_API_KEY_SHA256", settings.api_key_sha256)
     if settings.is_production():
         settings.require_secret("SUPABASE_SERVICE_ROLE_KEY", settings.supabase_service_key)
+    # Wire the configured PAD provider behind the phase-1 LivenessDetector
+    # protocol (AUTHETEC_PAD_PROVIDER: deterministic | native).
+    from app.biometric.integration import bootstrap_pad_provider
+    pad_provider = bootstrap_pad_provider()
     logger = logging.getLogger("authetec.api")
-    logger.info("Authetec API starting (env=%s version=%s)",
-                settings.environment, settings.app_version)
+    logger.info("Authetec API starting (env=%s version=%s pad=%s)",
+                settings.environment, settings.app_version, pad_provider)
     yield
     logger.info("Authetec API shutting down")
 
