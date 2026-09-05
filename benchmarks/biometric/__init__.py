@@ -34,10 +34,26 @@ from benchmarks.biometric.pad_benchmark import (
 )
 from benchmarks.biometric.threshold_analysis import (
     ThresholdAnalysis,
+    analyze_thresholds,
 )
 from benchmarks.biometric.performance import (
     PerformanceBenchmark,
     PerformanceResult,
+)
+from benchmarks.biometric.dataset import (
+    BiometricDataset,
+    DatasetSample,
+    generate_pad_samples,
+    generate_verification_pairs,
+    load_dataset,
+)
+from benchmarks.biometric.config import BenchmarkConfig, default_config
+from benchmarks.biometric.regression_gates import RegressionGateSet
+from benchmarks.biometric.model_integrity import (
+    ModelIntegrityResult,
+    assert_embeddings_finite,
+    integrity_passed,
+    verify_model_pins,
 )
 
 __all__ = [
@@ -51,6 +67,19 @@ __all__ = [
     "PadBenchmark",
     "PadResult",
     "ThresholdAnalysis",
+    "analyze_thresholds",
     "PerformanceBenchmark",
     "PerformanceResult",
+    "BiometricDataset",
+    "DatasetSample",
+    "generate_pad_samples",
+    "generate_verification_pairs",
+    "load_dataset",
+    "BenchmarkConfig",
+    "default_config",
+    "RegressionGateSet",
+    "ModelIntegrityResult",
+    "assert_embeddings_finite",
+    "integrity_passed",
+    "verify_model_pins",
 ]

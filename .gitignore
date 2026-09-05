@@ -25,3 +25,28 @@ benchmarks/repo3_pipeline/
 benchmarks/repo4_insurance/
 benchmarks/repo5_graph/
 benchmarks/repo6_identity/
+
+# ─────────────────────────────────────────────────────────────────────
+# Biometric data protections
+# ─────────────────────────────────────────────────────────────────────
+# Raw biometric samples must NEVER be committed.  Only manifests with
+# light-weight metadata and generated reports may appear in Git, and
+# manifests must not embed image data.
+benchmarks/biometric/data/
+datasets/
+datasets_biometric/
+
+# Raw-biometric extension guard: unknown image files anywhere (including
+# repo root) are refused by default.  Already-tracked project images stay
+# tracked; explicit negations allow new assets in the public asset dirs.
+*.jpeg
+*.jpg
+*.png
+*.tif
+*.tiff
+*.bmp
+*.webp
+!assets/*.png
+!frontend/public/**/*.png
+!frontend/public/**/*.jpg
+!assets/*.jpg
