@@ -470,9 +470,9 @@ is the universal blocker.
 |---|---|
 | Phase 2 branch | `authetec-native-biometric-engine` |
 | Starting commit | `6860e16ed02f3c0c6e03146beddaaaf1fa3f9b0d` |
-| Final commit | (filled in at release) |
-| Remote commit | (filled in at release) |
-| Push result | (filled in at release) |
+| Final commit | `40ade3a883fb51bc312f21db159819d60f32610f` |
+| Remote commit | `40ade3a883fb51bc312f21db159819d60f32610f` |
+| Push result | SUCCESS (new branch, no force-push) |
 | Working tree | clean (verified before push) |
 
 ---
